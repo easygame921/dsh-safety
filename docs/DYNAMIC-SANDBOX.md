@@ -157,11 +157,18 @@ dsh-speak、dsh-mini-tui 均可 completed）。
   dsh-plug-manager completed；dsh-mini-tui 偶发 crashed——TUI 插件在权限模型下
   的 TTY 相关，MVP 可接受）。
 
-## 10. 容器化（代码就绪，待环境）
+## 10. 隔离方案：本地方案为主，Docker 可选（2026-08-16 决策）
 
-- `Dockerfile`（node:24-slim + 非 root + permission model）与 `src/dynamic/docker.ts`
-  （docker run --network none + 只读挂载 + 512MB/1CPU 资源限制）已就绪。
-- **当前环境阻塞**：Docker daemon 不可用（`docker-desktop` WSL 发行版 Stopped 且
-  启动失败：ext4.vhdx 挂载错误）。`runDynamicDocker` 探测到 daemon 不可用会明确
-  返回 `spawn-failed` + 提示，不静默降级（由调用方决定回退本地沙箱）。
-- 启用方式：启动 Docker Desktop → `npm run build` → 调用方改用 docker 后端。
+**结论：动态沙箱不依赖 Docker**——本地方案（Node 权限模型 + 插桩）已覆盖核心隔离：
+
+| 隔离点 | 本地方案 | 状态 |
+| --- | --- | --- |
+| 网络 | `--permission` 不授权 net → fetch/http 被内核拒 + fetch patch | ✅ 实证（exfil 网络被拦） |
+| 文件系统 | `--allow-fs-read/write` 白名单 + HOME 重定向 | ✅ 实证（exfil 读真文件失败） |
+| 子进程 | 权限模型禁 child_process | ✅ |
+| 资源限制 | `--max-old-space-size=256` + 超时强杀 | ✅ 实证（内存炸弹 294ms OOM 崩溃，宿主无影响） |
+| eval/Function | patch 记录不执行 | ✅ |
+
+`Dockerfile` + `src/dynamic/docker.ts` **保留为可选增强**（内核级资源上限更严格），
+但**非必需**。Docker daemon 当前不可用不影响沙箱使用；`runDynamicDocker` 探测到
+daemon 不可用会明确提示，不静默降级。

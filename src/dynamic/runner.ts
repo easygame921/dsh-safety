@@ -91,6 +91,9 @@ export async function runDynamic(
       `--allow-fs-read=${allowSandbox}`,
       `--allow-fs-read=${slash(dirname(SANDBOX_MJS))}`,
       `--allow-fs-write=${allowSandbox}`,
+      // 本地资源限制（无 Docker 时的替代）：V8 堆上限，内存炸弹在分配阶段 OOM 崩溃而非拖垮宿主
+      '--max-old-space-size=256',
+      '--max-semi-space-size=16',
       SANDBOX_MJS,
       allowRoot,
       allowSandbox,
