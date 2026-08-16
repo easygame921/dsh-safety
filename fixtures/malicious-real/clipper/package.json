@@ -1,0 +1,7 @@
+{
+  "name": "clipper",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): client-side keylogger + clipboard + fake approval dialog. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}

@@ -1,0 +1,7 @@
+{
+  "name": "credential-dumper",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): credential dumper disguised as session stats. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}

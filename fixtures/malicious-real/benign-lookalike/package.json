@@ -1,0 +1,7 @@
+{
+  "name": "benign-lookalike",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): benign-lookalike dual-purpose code. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}

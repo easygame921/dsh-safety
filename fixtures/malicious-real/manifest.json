@@ -1,0 +1,94 @@
+{
+  "version": "1.0.0",
+  "note": "仿真恶意样本库（detection-rate ground truth）。攻击技法提炼自真实供应链攻击事件（npm/PyPI 投毒、GitHub Action 恶意包、DNS 隧道、后门持久化、零宽字符投毒等）。所有样本均为模式展示，不含可执行真实恶意载荷；仅用于 dsh-safety 检测率测试。",
+  "samples": [
+    {
+      "dir": "credential-dumper",
+      "label": "凭据窃取+外传（伪装会话统计助手）",
+      "expected": [
+        "T05",
+        "T06"
+      ],
+      "technique": "npm 投毒：伪装业务功能，读取 ~/.dsh 凭据 / ~/.ssh 私钥 / .env 后 POST 到外部收集端"
+    },
+    {
+      "dir": "supply-chain-injector",
+      "label": "供应链第二阶段载荷（install 脚本拉码执行）",
+      "expected": [
+        "T03",
+        "T04"
+      ],
+      "technique": "event-stream/ua-parser-js 类投毒：package.json postinstall 下载远程 stage2 载荷并 eval 执行"
+    },
+    {
+      "dir": "prompt-hijacker",
+      "label": "隐藏 prompt 注入（零宽字符 + 指令覆盖）",
+      "expected": [
+        "T02",
+        "T07"
+      ],
+      "technique": "2025 零宽字符投毒：用不可见 Unicode 隐藏指令劫持模型行为，覆盖 system prompt"
+    },
+    {
+      "dir": "session-thief",
+      "label": "会话日志窃取 + DNS 隧道外带",
+      "expected": [
+        "T08",
+        "T11"
+      ],
+      "technique": "DNS 隧道外带：读取 ~/.dsh/sessions 下思维链/对话记录，base64 后经 dns.resolve 外发（绕过网络审计）"
+    },
+    {
+      "dir": "persistence-rat",
+      "label": "持久化后门（rc 写入 + 计划任务 + 远程 RAT）",
+      "expected": [
+        "T04",
+        "T10"
+      ],
+      "technique": "后门持久化：写入 shell 启动文件与计划任务保证驻留，再从远程拉取 RAT 代码 eval 执行"
+    },
+    {
+      "dir": "clipper",
+      "label": "client 端复合（键盘监听 + 剪贴板 + 伪造审批弹窗）",
+      "expected": [
+        "T09"
+      ],
+      "technique": "浏览器恶意扩展技法：keydown 记录按键、读取剪贴板、注入伪造审批弹窗钓鱼"
+    },
+    {
+      "dir": "obfuscated-loader",
+      "label": "多层编码混淆载荷（base64→hex→间接 eval）",
+      "expected": [
+        "T02"
+      ],
+      "technique": "恶意 JS 多层混淆：编码嵌套 + 变量间接 eval 规避单行正则；混入零宽字符隐藏指令"
+    },
+    {
+      "dir": "delayed-exfil",
+      "label": "延迟+拆串对抗（路径拼接绕过 + 延时外传）",
+      "expected": [
+        "T05",
+        "T06"
+      ],
+      "technique": "反检测：敏感路径拆成多段字符串变量拼接（绕单行匹配）+ setTimeout 延迟触发（绕动态观察窗）"
+    },
+    {
+      "dir": "api-key-sniffer",
+      "label": "伪装视觉助手窃取 API 密钥（.env + 环境变量外传）",
+      "expected": [
+        "T05",
+        "T06"
+      ],
+      "technique": "功能伪装投毒：表面是图片描述工具，同时把 .env 与密钥环境变量 POST 到收集端"
+    },
+    {
+      "dir": "benign-lookalike",
+      "label": "双面代码（表面正常 + 隐藏指令 + 持久化）",
+      "expected": [
+        "T07",
+        "T10"
+      ],
+      "technique": "双面代码：表面注册正常工具，夹带 prompt 注入文本并写 shell 启动文件（诱饵式后门）"
+    }
+  ]
+}

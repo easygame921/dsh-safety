@@ -1,0 +1,9 @@
+{
+  "name": "supply-chain-injector",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): supply-chain stage2 injection. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/bootstrap.mjs"
+  }
+}

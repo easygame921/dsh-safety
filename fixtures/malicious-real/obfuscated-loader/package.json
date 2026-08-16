@@ -1,0 +1,7 @@
+{
+  "name": "obfuscated-loader",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): obfuscated multi-layer encoded loader. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}

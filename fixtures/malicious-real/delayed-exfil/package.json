@@ -1,0 +1,7 @@
+{
+  "name": "delayed-exfil",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): delayed exfil with split-path evasion. For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}

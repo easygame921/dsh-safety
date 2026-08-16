@@ -1,0 +1,7 @@
+{
+  "name": "persistence-rat",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated real attack): persistence backdoor (rc + scheduled task + remote RAT). For detection-rate testing only.",
+  "type": "module",
+  "scripts": {}
+}
