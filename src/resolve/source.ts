@@ -32,8 +32,14 @@ export function makeWorkDir(prefix = 'dsh-safety'): Promise<string> {
   return fs.mkdtemp(join(tmpdir(), `${prefix}-`));
 }
 
-async function run(cmd: string, args: string[], cwd: string, timeoutMs = 120000): Promise<void> {
-  await execFileAsync(cmd, args, { cwd, timeout: timeoutMs, windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
+async function run(cmd: string, args: string[], cwd: string, timeoutMs = 120000, env?: Record<string, string>): Promise<void> {
+  await execFileAsync(cmd, args, {
+    cwd,
+    timeout: timeoutMs,
+    windowsHide: true,
+    maxBuffer: 16 * 1024 * 1024,
+    env: { ...process.env, ...env },
+  });
 }
 
 /** 找出解压/克隆结果中的"插件根目录"（npm 包常见 package/ 前缀单目录） */
@@ -105,9 +111,18 @@ export async function resolveSource(spec: SourceSpec, workDir: string): Promise<
     direct.startsWith('https://github.com/') ? `https://ghfast.top/${direct}` : null,
   ].filter((v): v is string => v !== null);
   let lastErr: unknown = null;
+  // 禁用一切 git 交互提示（凭据管理器弹窗/终端用户名输入）：
+  // GIT_TERMINAL_PROMPT=0 禁止终端提示；GCM_INTERACTIVE=never 禁止 Windows 凭据管理器 GUI；
+  // GIT_ASKPASS=echo 兜底（认证一律返回空）；SSH BatchMode=yes 免交互。
+  const nonInteractiveEnv = {
+    GIT_TERMINAL_PROMPT: '0',
+    GCM_INTERACTIVE: 'never',
+    GIT_ASKPASS: 'echo',
+    GIT_SSH_COMMAND: 'ssh -oBatchMode=yes',
+  };
   for (const url of mirrors) {
     try {
-      await run('git', ['clone', '--depth', '1', url, target], workDir, 180000);
+      await run('git', ['clone', '--depth', '1', url, target], workDir, 180000, nonInteractiveEnv);
       return target;
     } catch (err) {
       lastErr = err;
