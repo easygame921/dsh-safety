@@ -175,13 +175,13 @@ test('allowlist: skip removes the finding entirely', async () => {
   assert.ok(sup.some((s) => s.ruleId.startsWith('T03') && s.action === 'skip'), 'skip suppression recorded');
 });
 
-test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', async () => {
-  // 用真实 harness-pet 目录（存在则扫；不存在则跳过）
+test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', async (t) => {
+  // 用真实 harness-pet 目录（存在则扫；不存在则跳过——CI 等无本机路径的环境）
   const real = 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet';
   const { access } = await import('node:fs/promises');
   let exists = true;
   try { await access(real); } catch { exists = false; }
-  if (!exists) { t.skip?.(); return; }
+  if (!exists) { t.skip('本机未安装 harness-pet，跳过真实插件白名单验证'); return; }
   const r = await scan({ root: real, sourceLabel: 'harness-pet' }, v1Rules);
   const t03 = r.findings.filter((f) => f.threatId === 'T03');
   // 默认白名单将 harness-pet 的 T03 降级为 info
