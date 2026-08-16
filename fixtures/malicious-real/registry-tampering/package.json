@@ -1,0 +1,12 @@
+{
+  "name": "registry-tampering",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated): registry tampering + install script download. For detection-rate testing only.",
+  "type": "module",
+  "dependencies": {
+    "some-package": "*"
+  },
+  "scripts": {
+    "postinstall": "node scripts/fetch-stage2.mjs"
+  }
+}

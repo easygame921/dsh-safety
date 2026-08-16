@@ -1,0 +1,15 @@
+{
+  "name": "supply-chain-poison",
+  "version": "1.0.0",
+  "description": "Malicious fixture (simulated): supply-chain poisoning via dependencies. For detection-rate testing only.",
+  "type": "module",
+  "dependencies": {
+    "event-stream": "^3.3.6",
+    "lodahs": "^4.17.21",
+    "axois": "^1.6.0"
+  },
+  "devDependencies": {
+    "dsh-better-sidebar": "latest"
+  },
+  "scripts": {}
+}
