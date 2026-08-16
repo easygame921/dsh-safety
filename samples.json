@@ -105,6 +105,31 @@
         { "name": "dsh-market", "source": "npm:dshmarket" },
         { "name": "dsh-plugin-marketplace", "source": "npm:dsh-plugin-marketplace" }
       ]
+    },
+    {
+      "name": "脚手架开发类",
+      "samples": [
+        { "name": "create-dsh-plugin", "source": "npm:create-dsh-plugin" },
+        { "name": "hyzyn-dsh-all", "source": "npm:@hyzyn/dsh-all" },
+        { "name": "botscape-bundle", "source": "npm:@botscape/bundle" },
+        { "name": "dsh-web-open", "source": "npm:dsh-web-open" }
+      ]
+    },
+    {
+      "name": "远程平台类",
+      "samples": [
+        { "name": "a4phone", "source": "npm:a4phone" },
+        { "name": "dsh-codex-connect", "source": "npm:dsh-codex-connect" },
+        { "name": "open-agfs-dsh-agfs", "source": "npm:@open-agfs/dsh-agfs" },
+        { "name": "dsh-codex-oauth", "source": "npm:dsh-codex-oauth" }
+      ]
+    },
+    {
+      "name": "内容写作类",
+      "samples": [
+        { "name": "dsh-plugin-writing-guard", "source": "npm:dsh-plugin-writing-guard" },
+        { "name": "linxin666-dsh-client-ui-task-board", "source": "npm:@linxin666/dsh-client-ui-task-board" }
+      ]
     }
   ]
 }
