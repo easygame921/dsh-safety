@@ -147,6 +147,16 @@ npm tarball 无 node_modules → 插件 import 外部依赖失败是主要瓶颈
 "命令不执行"约束一致）。实测：真实插件加载率 1/6 → 3/6（dsh-better-edit、
 dsh-speak、dsh-mini-tui 均可 completed）。
 
+### 9.1 ctx mock 迭代（2026-08-16 二轮）
+
+- 补齐 20+ 服务表面（model/agent/approval/storage/terminal/shell/workflows/
+  compaction/subagent/attachment/credentials/plugins/heartbeat…）。
+- **chainable noop 兜底**：未知 ctx 表面返回可链式调用对象（`ctx.xxx().yyy()` 不崩），
+  解决真实插件 apply 阶段崩溃（`ctx.get`、`xxx.register` 等）。
+- 实测加载率：**3/6 → 5/6**（dsh-better-edit/dsh-cost-log/dsh-speak/dsh-ergonomics/
+  dsh-plug-manager completed；dsh-mini-tui 偶发 crashed——TUI 插件在权限模型下
+  的 TTY 相关，MVP 可接受）。
+
 ## 10. 容器化（代码就绪，待环境）
 
 - `Dockerfile`（node:24-slim + 非 root + permission model）与 `src/dynamic/docker.ts`

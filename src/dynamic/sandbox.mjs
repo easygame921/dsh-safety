@@ -97,7 +97,22 @@ process.env = new Proxy(envBacking, {
 const handlers = new Map();
 const registeredTools = [];
 const logs = [];
-const mockCtx = {
+
+/** 可链式调用的 noop 对象：任何属性/调用都返回自身（未知 ctx 表面不崩） */
+function chainable(label) {
+  const fn = function () {};
+  return new Proxy(fn, {
+    get(t, prop) {
+      if (prop === Symbol.toPrimitive) return () => 0;
+      if (prop === 'then' || prop === 'catch' || prop === 'finally') return undefined; // 避免被当 Promise
+      return chainable(`${label}.${String(prop)}`);
+    },
+    apply() { return chainable(label); },
+    construct() { return chainable(label); },
+  });
+}
+
+const mockCtxBase = {
   session: { id: 'sandbox-session' },
   on(event, cb) {
     if (!handlers.has(event)) handlers.set(event, []);
@@ -125,6 +140,9 @@ const mockCtx = {
   sessions: { get: () => ({ push() {}, content: [] }), getCurrent: () => null },
   config: { get: () => undefined },
   workspace: { get cwd() { return sandboxWorkDir; } },
+  // cordis 服务获取：返回 chainable（未知服务不崩）
+  get: () => chainable('ctx.get'),
+  inject: () => chainable('ctx.inject'),
   // ── 常见服务表面（dsh 生态插件常用，安全空实现，不抛错）──
   model: {
     on() {},
@@ -154,6 +172,14 @@ const mockCtx = {
   plugins: { on() {} },
   heartbeat: { on() {} },
 };
+
+// 顶层兜底：未知 ctx 属性返回 chainable（链式调用不崩，行为记录为未知表面）
+const mockCtx = new Proxy(mockCtxBase, {
+  get(t, prop) {
+    if (prop in t) return t[prop];
+    return chainable(`ctx.${String(prop)}`);
+  },
+});
 
 // ── 5. 加载插件入口 ──────────────────────────────────────────────────────
 async function loadPlugin() {
