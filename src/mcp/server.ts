@@ -15,7 +15,7 @@ import { crossValidate, renderCrossValidation } from '../cross/index.js';
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'dsh-safety',
-    version: '0.1.0',
+    version: '0.6.0',
   });
 
   interface AuditResult {

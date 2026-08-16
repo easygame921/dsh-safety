@@ -9,7 +9,8 @@ import { runDynamic, renderDynamicSummary } from './dynamic/index.js';
 import { crossValidate, renderCrossValidation } from './cross/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-const VERSION = '0.1.0';
+/** 工具版本，与 package.json 保持一致（发布时同步 bump） */
+const VERSION = '0.6.0';
 
 function help(): string {
   return [

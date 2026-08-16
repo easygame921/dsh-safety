@@ -4,7 +4,8 @@
  */
 import type { SafetyRule } from '../types.js';
 
-export const RULE_SET_VERSION = '0.1.0';
+/** 规则库版本（独立于工具版本——规则集演进到 1.0：T01-T14 十二个威胁面，40 测试全绿） */
+export const RULE_SET_VERSION = '1.0.0';
 
 export const v1Rules: SafetyRule[] = [
   // ── T01 配置树降级 / 安全组件禁用 ──────────────────────────────────────

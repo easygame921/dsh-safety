@@ -5,7 +5,8 @@ import type {
   AllowlistConfig, AllowlistEntry, AllowlistSuppression, Finding, ScanOptions,
 } from '../types.js';
 
-export const ALLOWLIST_VERSION = '0.1.0';
+/** 白名单版本（独立于工具版本——白名单随社区插件实测演进） */
+export const ALLOWLIST_VERSION = '1.0.0';
 
 /** 内置默认白名单：面向已知正常插件的已知误报（降级而非删除，保留证据） */
 export const defaultAllowlist: AllowlistConfig = {
