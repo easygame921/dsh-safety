@@ -4,7 +4,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { AuditReport } from '../types.js';
-import { scan, renderMarkdown } from '../scanner/index.js';
+import { scan, renderMarkdown, renderPlainSummary } from '../scanner/index.js';
 import { v1Rules } from '../rules/index.js';
 import { prepareSource } from '../resolve/source.js';
 
@@ -14,30 +14,37 @@ export function createServer(): McpServer {
     version: '0.1.0',
   });
 
-  async function doAudit(source: string, ruleIds: string[] | undefined): Promise<string> {
+  async function doAudit(source: string, ruleIds: string[] | undefined): Promise<AuditReport> {
     const { root, workDir, cleanup } = await prepareSource(source);
     try {
       const rules = ruleIds && ruleIds.length > 0
         ? v1Rules.filter((r) => ruleIds.includes(r.id))
         : v1Rules;
-      const report: AuditReport = await scan({ root, sourceLabel: source }, rules);
-      return renderMarkdown(report);
+      return await scan({ root, sourceLabel: source }, rules);
     } finally {
       await cleanup();
     }
   }
 
+  /** 输出 = 完整报告 + 大白话总结（机制约定见 docs/AUTOTRIGGER.md） */
+  function auditContent(report: AuditReport): { type: 'text'; text: string }[] {
+    return [
+      { type: 'text', text: renderMarkdown(report) },
+      { type: 'text', text: renderPlainSummary(report) },
+    ];
+  }
+
   server.registerTool(
     'audit_plugin',
     {
-      description: '审计一个 DSH 插件来源（npm 包名 / github:owner/repo / 本地目录路径），返回 Markdown 安全报告。',
+      description: '审计一个 DSH 插件来源（npm 包名 / github:owner/repo / 本地目录路径），返回完整报告 + 大白话总结。',
       inputSchema: {
         source: z.string().describe('npm 包名、github:owner/repo 或本地绝对路径'),
         ruleIds: z.array(z.string()).optional().describe('可选：只跑指定规则 id'),
       },
     },
     async ({ source, ruleIds }) => ({
-      content: [{ type: 'text', text: await doAudit(source, ruleIds) }],
+      content: auditContent(await doAudit(source, ruleIds)),
     }),
   );
 
@@ -59,7 +66,7 @@ export function createServer(): McpServer {
         const npm = url.match(/npmjs\.com\/package\/(.+)/);
         source = npm && npm[1] ? 'npm:' + npm[1] : url;
       }
-      return { content: [{ type: 'text', text: await doAudit(source, ruleIds) }] };
+      return { content: auditContent(await doAudit(source, ruleIds)) };
     },
   );
 

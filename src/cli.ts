@@ -1,7 +1,7 @@
 /**
  * CLI 入口：dsh-safety audit <source> | serve | --version | --help
  */
-import { scan, renderMarkdown } from './scanner/index.js';
+import { scan, renderMarkdown, renderPlainSummary } from './scanner/index.js';
 import { v1Rules } from './rules/index.js';
 import { prepareSource } from './resolve/source.js';
 import { createServer } from './mcp/server.js';
@@ -26,6 +26,7 @@ async function cmdAudit(source: string): Promise<number> {
   try {
     const report = await scan({ root, sourceLabel: source }, v1Rules);
     process.stdout.write(renderMarkdown(report) + '\n');
+    process.stdout.write('\n---\n\n' + renderPlainSummary(report) + '\n');
     return report.risk === 'ok' ? 0 : 1;
   } finally {
     await cleanup();

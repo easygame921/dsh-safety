@@ -2,25 +2,27 @@
  * 扫描引擎统一入口。
  */
 import type { AuditReport, Finding, SafetyRule, ScanOptions } from '../types.js';
-import { discoverFiles } from './files.js';
+import { discoverFiles, TEST_EXCLUDE_DIRS } from './files.js';
 import { runRules } from './engine.js';
 import { buildProfile } from './profile.js';
-import { renderMarkdown, toSummary } from './report.js';
+import { renderMarkdown, renderPlainSummary, toSummary } from './report.js';
 import { resolveAllowlist, applyAllowlist } from '../allowlist/index.js';
 
-export { discoverFiles } from './files.js';
+export { discoverFiles, TEST_EXCLUDE_DIRS } from './files.js';
 export { runRules } from './engine.js';
 export { buildProfile } from './profile.js';
-export { renderMarkdown, toSummary } from './report.js';
+export { renderMarkdown, renderPlainSummary, toSummary } from './report.js';
 export { defaultAllowlist } from '../allowlist/index.js';
 
 export const RULE_SET_VERSION = '0.1.0';
 
 export async function scan(options: ScanOptions, rules: SafetyRule[]): Promise<AuditReport> {
   const started = Date.now();
+  const excludeTests = options.excludeTests ?? true;
   const files = await discoverFiles(options.root, {
     maxFiles: options.maxFiles,
     maxFileBytes: options.maxFileBytes,
+    excludeDirNames: excludeTests ? TEST_EXCLUDE_DIRS : [],
   });
   const activeRules = options.ruleIds && options.ruleIds.length > 0
     ? rules.filter((r) => options.ruleIds!.includes(r.id))

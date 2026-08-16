@@ -1,7 +1,7 @@
 /**
- * 报告生成：Markdown 权限画像卡 + JSON 摘要。
+ * 报告生成：Markdown 权限画像卡 + 大白话总结 + JSON 摘要。
  */
-import type { AuditReport, AuditSummary } from '../types.js';
+import type { AuditReport, AuditSummary, ThreatId } from '../types.js';
 
 export function toSummary(report: AuditReport): AuditSummary {
   return {
@@ -13,6 +13,80 @@ export function toSummary(report: AuditReport): AuditSummary {
     writesPerformed: false,
     ruleSetVersion: report.ruleSetVersion,
   };
+}
+
+/** 威胁编号 → 大白话解释（普通用户可懂） */
+const THREAT_PLAIN: Record<ThreatId, string> = {
+  T01: '装完后可能会偷偷关掉你的安全保护（审批/沙箱），然后为所欲为',
+  T02: '代码里藏着看不见的指令或加密内容，可能想骗过 AI 或检查',
+  T03: '安装的时候会自动执行一段脚本命令（最常见的手脚）',
+  T04: '运行时会从网上下载代码再执行——装的时候看不出来，防不胜防',
+  T05: '可能把你的数据（包括文件内容）偷偷发给外部服务器',
+  T06: '可能读取你的密钥/密码/配置文件（比如 .credentials.yaml、.ssh）',
+  T07: '可能往对话里塞指令，偷偷影响 AI 的回答',
+  T08: '可能偷看你的思考过程（思维链）或完整对话记录',
+  T09: '可能伪造弹窗骗你点"允许"，或偷听键盘、读剪贴板',
+  T10: '可能修改开机自启/启动脚本——卸载了它还能继续跑',
+  T11: '可能用域名解析做隐蔽通道，偷偷往外传数据',
+  T12: '在不同环境下表现不同，可能只在真实用户机器上才使坏',
+  T13: '来源信誉存疑（包名像冒牌货/仓库可疑）',
+  T14: '它的依赖里有可疑包（供应链投毒）',
+};
+
+/** 权限画像 → 大白话（它"能干什么"） */
+function plainAbilities(report: AuditReport): string[] {
+  const p = report.profile;
+  const out: string[] = [];
+  if (p.filesystemRead) out.push('读取你电脑上的文件');
+  if (p.filesystemWrite) out.push('往你电脑上写文件');
+  if (p.childProcesses) out.push('执行系统命令');
+  if (p.network) out.push(`联网（访问 ${p.outboundHosts.slice(0, 5).join('、') || '外部服务器'}）`);
+  if (p.dynamicCodeExecution) out.push('动态执行代码');
+  if (p.credentialPaths.length > 0) out.push('涉及敏感文件（密钥/配置）');
+  if (p.injectedServices.length > 0) out.push('访问内部服务');
+  if (p.installScripts.length > 0) out.push('安装时执行脚本');
+  if (p.bundlePatch) out.push('带配置补丁（可改装配）');
+  return out;
+}
+
+/**
+ * 大白话总结：普通用户能直接看懂的审计结论。
+ * 机制约定（docs/AUTOTRIGGER.md）：每次输出报告后必须附带本总结。
+ */
+export function renderPlainSummary(report: AuditReport): string {
+  const lines: string[] = [];
+  const riskText = report.risk === 'ok' ? '✅ 没发现明显危险' : '⚠️ 建议谨慎，有值得注意的地方';
+  const verdict = report.risk === 'ok'
+    ? '可以安装，但记得从可信来源装'
+    : '先别急着装——把下面几条看完，确认没问题再决定';
+  lines.push('## 🗣️ 大白话总结');
+  lines.push('');
+  lines.push(`**结论**：${verdict}`);
+  lines.push('');
+  lines.push(`这个插件${report.profile.filesystemRead || report.profile.filesystemWrite || report.profile.network || report.profile.childProcesses ? '**有这些能力**：' : '比较单纯，没做什么敏感操作。'}`);
+  const abilities = plainAbilities(report);
+  if (abilities.length > 0) {
+    for (const a of abilities) lines.push(`- ${a}`);
+  }
+  lines.push('');
+  if (report.findings.length === 0) {
+    lines.push('没有触发任何风险规则。');
+  } else {
+    lines.push(`发现了 ${report.findingsCount} 条记录（${report.risk === 'ok' ? '都是低级别提醒' : '其中包含需要认真看的'}），用大白话讲：`);
+    lines.push('');
+    for (const f of report.findings) {
+      const threat = THREAT_PLAIN[f.threatId] ?? f.threatId;
+      const locs = f.evidence.slice(0, 2).map((e) => `\`${e.file}${e.line > 0 ? ':' + e.line : ''}\``).join('、');
+      lines.push(`- **${f.title}**（${f.severity === 'review' ? '⚠️ 重点' : 'ℹ️ 提醒'}）：${threat}${locs ? ` — 位置：${locs}` : ''}`);
+    }
+  }
+  lines.push('');
+  if (report.suppressions && report.suppressions.length > 0) {
+    lines.push(`另有 ${report.suppressions.length} 条已按白名单放行（人工确认过没问题）：${report.suppressions.map((s) => s.ruleId).join('、')}。`);
+  }
+  lines.push('');
+  lines.push('> 详细证据（文件、行号、代码片段）见上方完整报告；拿不准就搜一下这个插件的口碑再装。');
+  return lines.join('\n');
 }
 
 function markdownTable(headers: string[], rows: string[][]): string {

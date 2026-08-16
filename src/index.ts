@@ -1,7 +1,7 @@
 /**
  * dsh-safety 公共入口。
  */
-export { scan, renderMarkdown, toSummary, RULE_SET_VERSION } from './scanner/index.js';
+export { scan, renderMarkdown, renderPlainSummary, toSummary, RULE_SET_VERSION, TEST_EXCLUDE_DIRS } from './scanner/index.js';
 export { v1Rules } from './rules/index.js';
 export { createServer } from './mcp/server.js';
 export { parseSource, resolveSource, prepareSource } from './resolve/source.js';

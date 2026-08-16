@@ -14,11 +14,15 @@ export interface ScannedFile {
 }
 
 const EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', '.dsh-safety-cache']);
+/** excludeTests 时额外排除的测试/夹具目录 */
+export const TEST_EXCLUDE_DIRS = ['tests', '__tests__', 'test', 'spec', '__specs__', 'fixtures'];
 const INCLUDE_EXT = new Set(['.js', '.ts', '.mjs', '.cjs', '.json', '.yml', '.yaml', '.md', '.ps1', '.sh', '.jsx', '.tsx']);
 
 export interface DiscoverOptions {
   maxFiles?: number;
   maxFileBytes?: number;
+  /** 额外排除的目录名 */
+  excludeDirNames?: string[];
 }
 
 export async function discoverFiles(root: string, opts: DiscoverOptions = {}): Promise<ScannedFile[]> {
@@ -26,6 +30,7 @@ export async function discoverFiles(root: string, opts: DiscoverOptions = {}): P
   const maxBytes = opts.maxFileBytes ?? 256 * 1024;
   const out: ScannedFile[] = [];
   let skipped = 0;
+  const extraExcludes = new Set(opts.excludeDirNames ?? []);
 
   async function walk(dir: string): Promise<void> {
     if (out.length >= maxFiles) return;
@@ -39,7 +44,7 @@ export async function discoverFiles(root: string, opts: DiscoverOptions = {}): P
       if (out.length >= maxFiles) return;
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (EXCLUDE_DIRS.has(entry.name)) continue;
+        if (EXCLUDE_DIRS.has(entry.name) || extraExcludes.has(entry.name)) continue;
         await walk(full);
         continue;
       }

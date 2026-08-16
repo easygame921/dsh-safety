@@ -147,6 +147,8 @@ export interface ScanOptions {
   allowlist?: AllowlistConfig;
   /** 是否加载内置默认白名单（默认 true） */
   useDefaultAllowlist?: boolean;
+  /** 是否排除测试/夹具目录（tests/spec/fixtures 等，默认 true——那里常含显式恶意样本，非插件真实行为） */
+  excludeTests?: boolean;
 }
 
 // ── 白名单（Allowlist）────────────────────────────────────────────────────
