@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { installDeps } from './deps.js';
 
 export interface DynamicTrace {
-  type: 'network' | 'command' | 'fs-read' | 'fs-write' | 'eval' | 'env' | 'event' | 'load';
+  type: 'network' | 'command' | 'fs-read' | 'fs-write' | 'eval' | 'env' | 'event' | 'load' | 'timer' | 'tool';
   [k: string]: unknown;
 }
 
@@ -36,8 +36,9 @@ const DEFAULT_TIMEOUT_MS = 20000;
 
 export { riskSurfacesOf };
 
-/** 敏感路径正则（风险面判定） */
-const SENSITIVE_RE = /\.credentials\.ya?ml|id_rsa|id_ed25519|\.ssh|\.npmrc|\.codex|\.aws[/\\]credentials|\.netrc|(?<![\\w.])[.]env\b/i;
+/** 敏感路径正则（风险面判定）：凭据文件 + 会话日志（T08 动态对应）
+ *  注意：正则字面量里 [\w.] 才是 word 字符类（\\w 是字面反斜杠+w） */
+const SENSITIVE_RE = /\.credentials\.ya?ml|id_rsa|id_ed25519|\.ssh|\.npmrc|\.codex|\.aws[/\\]credentials|\.netrc|(?<![\w.])[.]env\b|\.dsh[/\\]sessions|[/\\]sessions[/\\]/i;
 
 function riskSurfacesOf(traces: DynamicTrace[]): string[] {
   const surfaces = new Set<string>();
@@ -47,11 +48,14 @@ function riskSurfacesOf(traces: DynamicTrace[]): string[] {
   const hasNetwork = traces.some((t) => t.type === 'network');
   const hasCommand = traces.some((t) => t.type === 'command');
   const hasEval = traces.some((t) => t.type === 'eval');
+  const hasTimer = traces.some((t) => t.type === 'timer');
   if (hasSensitiveRead) surfaces.add('fs-read-sensitive');
   if (hasNetwork) surfaces.add('network');
   if (hasNetwork && (hasSensitiveRead || hasCommand)) surfaces.add('network-exfil-risk');
   if (hasCommand) surfaces.add('command');
   if (hasEval) surfaces.add('eval');
+  // 延迟触发（setTimeout/setInterval）是反静态检测手法——与敏感行为组合时值得注意
+  if (hasTimer && (hasSensitiveRead || hasNetwork || hasCommand || hasEval)) surfaces.add('deferred-trigger');
   return [...surfaces];
 }
 
@@ -84,12 +88,28 @@ export async function runDynamic(
     const slash = (p: string) => p.replaceAll('\\', '/'); // Node 24 权限模型用正斜杠匹配
     const allowRoot = slash(await realpath(pluginRoot));
     const allowSandbox = slash(await realpath(sandboxWorkDir));
+    // 向上找最近的 node_modules（插件依赖解析目录；本地已装依赖插件可加载）
+    let nmParent = dirname(pluginRoot);
+    let siblingModules = '';
+    while (true) {
+      const cand = join(nmParent, 'node_modules');
+      try {
+        await realpath(cand);
+        siblingModules = slash(cand);
+        break;
+      } catch {
+        const up = dirname(nmParent);
+        if (up === nmParent) break;
+        nmParent = up;
+      }
+    }
     // 每个允许路径一个独立 flag（逗号分隔不被 Node 支持）
     const args = [
       '--permission',
       `--allow-fs-read=${allowRoot}`,
       `--allow-fs-read=${allowSandbox}`,
       `--allow-fs-read=${slash(dirname(SANDBOX_MJS))}`,
+      ...(siblingModules ? [`--allow-fs-read=${siblingModules}`] : []),
       `--allow-fs-write=${allowSandbox}`,
       // 本地资源限制（无 Docker 时的替代）：V8 堆上限，内存炸弹在分配阶段 OOM 崩溃而非拖垮宿主
       '--max-old-space-size=256',
