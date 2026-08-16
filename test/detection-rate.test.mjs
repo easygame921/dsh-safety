@@ -61,13 +61,8 @@ test('detection-rate: benign fixtures produce zero review findings', async () =>
 test('detection-rate: local real plugins stay low-noise (<=3 review findings each, known-benign)', async (t) => {
   // 本地已装真实插件（人工复核良性）；存在则校验误报上限，不存在则跳过（CI 环境）
   const { access } = await import('node:fs/promises');
-  const plugins = [
-    'C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar',
-    'C:/Users/gojo/.dsh/profiles/web/node_modules/zat-dsh-engine',
-    'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision',
-    'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-super-injector',
-    'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet',
-  ];
+  const { localPluginDirs } = await import('./local-plugins.mjs');
+  const plugins = localPluginDirs;
   const details = [];
   for (const p of plugins) {
     let exists = true;

@@ -80,12 +80,15 @@ for (const d of benignDirs) {
 }
 
 // 本地真实插件对照（已人工复核为良性；存在则扫，不存在跳过——CI 等无本机路径的环境）
+const { homedir } = await import('node:os');
+const { join } = await import('node:path');
+const dshNodeModules = join(homedir(), '.dsh', 'profiles', 'web', 'node_modules');
 const localPlugins = [
-  { dir: 'C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar', label: 'dsh-better-sidebar' },
-  { dir: 'C:/Users/gojo/.dsh/profiles/web/node_modules/zat-dsh-engine', label: 'zat-dsh-engine' },
-  { dir: 'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision', label: 'dsh-vision' },
-  { dir: 'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-super-injector', label: 'dsh-super-injector' },
-  { dir: 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet', label: 'harness-pet' },
+  { dir: join(dshNodeModules, 'dsh-better-sidebar'), label: 'dsh-better-sidebar' },
+  { dir: join(dshNodeModules, 'zat-dsh-engine'), label: 'zat-dsh-engine' },
+  { dir: join(dshNodeModules, '@dsh-external', 'dsh-vision'), label: 'dsh-vision' },
+  { dir: join(dshNodeModules, '@dsh-external', 'dsh-super-injector'), label: 'dsh-super-injector' },
+  { dir: join(dshNodeModules, 'harness-pet'), label: 'harness-pet' },
 ];
 const { access } = await import('node:fs/promises');
 const localRows = [];

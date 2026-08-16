@@ -22,14 +22,14 @@
         { "name": "aalongaa-dsh-tool-vision", "source": "npm:@aalongaa/dsh-tool-vision" },
         { "name": "linxin666-dsh-tool-describe-image", "source": "npm:@linxin666/dsh-tool-describe-image" },
         { "name": "dttxorg-deepseekeyes", "source": "npm:@dttxorg/deepseekeyes" },
-        { "name": "dsh-vision", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision" },
+        { "name": "dsh-vision", "source": "local:<dsh-profile>/node_modules/@dsh-external/dsh-vision" },
         { "name": "crazy-th-dsh-computer-use", "source": "github:crazy-th/dsh-computer-use" }
       ]
     },
     {
       "name": "UI界面增强类",
       "samples": [
-        { "name": "dsh-better-sidebar", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar" },
+        { "name": "dsh-better-sidebar", "source": "local:<dsh-profile>/node_modules/dsh-better-sidebar" },
         { "name": "dsh-plugin-workbench", "source": "npm:dsh-plugin-workbench" },
         { "name": "dsh-plugin-file-explorer", "source": "npm:dsh-plugin-file-explorer" },
         { "name": "dsh-web-open", "source": "npm:dsh-web-open" },
@@ -85,7 +85,7 @@
     {
       "name": "宠物娱乐类",
       "samples": [
-        { "name": "harness-pet", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet" },
+        { "name": "harness-pet", "source": "local:<dsh-profile>/node_modules/harness-pet" },
         { "name": "linxin666-dsh-pet", "source": "npm:@linxin666/dsh-pet" },
         { "name": "dsh-client-ui-pet", "source": "npm:dsh-client-ui-pet" }
       ]

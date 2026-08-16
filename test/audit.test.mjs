@@ -198,7 +198,8 @@ test('allowlist: skip removes the finding entirely', async () => {
 
 test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', async (t) => {
   // 用真实 harness-pet 目录（存在则扫；不存在则跳过——CI 等无本机路径的环境）
-  const real = 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet';
+  const { localPluginDirs } = await import('./local-plugins.mjs');
+  const real = localPluginDirs[4]; // harness-pet
   const { access } = await import('node:fs/promises');
   let exists = true;
   try { await access(real); } catch { exists = false; }
@@ -211,11 +212,7 @@ test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', as
 
 // ---------------------------------------------------------------- excludeTests + plain summary
 test('excludeTests: default true skips tests/fixtures dirs', async () => {
-  // dsh-plugin-audit 有 tests/ 目录；默认排除后不应命中它的测试夹具
-  const real = 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet';
-  // 用 fixtures/malicious/exfil 的"tests 内恶意样本"构造：把 malicious/exfil 当普通插件扫，
-  // 其中无 tests 目录——改用真实 dsh-plugin-audit 太依赖网络。这里验证语义：
-  // 扫描一个含 tests 目录的合成目录（临时在 fixtures 里造一个）
+  // 语义验证：扫描一个含 tests 目录的合成目录（临时在 fixtures 里造一个）
   const { mkdtemp, writeFile, mkdir, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
   const dir = await mkdtemp(join(tmpdir(), 'dsh-safety-xtest-'));

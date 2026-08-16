@@ -6,7 +6,10 @@
 import { scan, v1Rules, prepareSource } from '../dist/index.js';
 import { runDynamic } from '../dist/dynamic/index.js';
 import { crossValidate } from '../dist/cross/index.js';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
+const dshNodeModules = join(homedir(), '.dsh', 'profiles', 'web', 'node_modules');
 const targets = [
   ['dsh-codex-connect', 'npm:dsh-codex-connect'],
   ['linxin666-dsh-ssh', 'npm:@linxin666/dsh-ssh'],
@@ -14,8 +17,8 @@ const targets = [
   ['dsh-market', 'npm:dshmarket'],
   ['rongyi7-dsh-stats', 'npm:@rongyi7/dsh-stats'],
   ['dsh-plug-manager', 'npm:dsh-plug-manager'],
-  ['harness-pet', 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet'],
-  ['dsh-vision', 'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision'],
+  ['harness-pet', join(dshNodeModules, 'harness-pet')],
+  ['dsh-vision', join(dshNodeModules, '@dsh-external', 'dsh-vision')],
 ];
 
 for (const [name, src] of targets) {
