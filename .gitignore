@@ -1,0 +1,33 @@
+# deps
+node_modules/
+*.tgz
+.npm/
+
+# build
+dist/
+build/
+*.tsbuildinfo
+
+# runtime
+*.log
+data/
+cache/
+.dsh-safety-cache/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# editor / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# git
+*.orig
+*.bak
+*.bak-*
