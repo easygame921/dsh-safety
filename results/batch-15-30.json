@@ -1,0 +1,339 @@
+[
+  {
+    "name": "dsh-better-sidebar",
+    "category": "UI界面增强类",
+    "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar",
+    "risk": "review",
+    "filesScanned": 171,
+    "findingsCount": 48,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T02 零宽/不可见字符注入",
+      "T03 安装脚本（preinstall/postinstall/prepare）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T07 指令注入文本（hidden instruction）",
+      "T07 指令注入文本（hidden instruction）",
+      "T07 指令注入文本（hidden instruction）",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 211
+  },
+  {
+    "name": "dsh-plugin-workbench",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-plugin-workbench",
+    "risk": "review",
+    "filesScanned": 18,
+    "findingsCount": 8,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T03 安装脚本（preinstall/postinstall/prepare）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 2572
+  },
+  {
+    "name": "dsh-plugin-file-explorer",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-plugin-file-explorer",
+    "risk": "review",
+    "filesScanned": 7,
+    "findingsCount": 6,
+    "review": [
+      "T04 远程拉取代码并执行（fetch + eval/import）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1183
+  },
+  {
+    "name": "dsh-web-open",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-web-open",
+    "risk": "review",
+    "filesScanned": 7,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 669
+  },
+  {
+    "name": "dsh-ergonomics",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-ergonomics",
+    "risk": "review",
+    "filesScanned": 4,
+    "findingsCount": 4,
+    "review": [
+      "T08 思维链/消息改写 hook",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1080
+  },
+  {
+    "name": "dsh-chrome",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-chrome",
+    "risk": "review",
+    "filesScanned": 16,
+    "findingsCount": 5,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T02",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 4920
+  },
+  {
+    "name": "dsh-mcp-mgr-ui",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-mcp-mgr-ui",
+    "risk": "ok",
+    "filesScanned": 8,
+    "findingsCount": 2,
+    "review": [],
+    "notice": [
+      "T02",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 2415
+  },
+  {
+    "name": "michengai-dsh-skills-manager",
+    "category": "UI界面增强类",
+    "source": "npm:@michengai/dsh-skills-manager",
+    "risk": "review",
+    "filesScanned": 7,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T09 client 端 DOM 注入（伪造审批弹窗）",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 7918
+  },
+  {
+    "name": "dsh-extension-hub",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-extension-hub",
+    "risk": "review",
+    "filesScanned": 23,
+    "findingsCount": 15,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T04 远程拉取代码并执行（fetch + eval/import）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T09 client 端 DOM 注入（伪造审批弹窗）"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 2268
+  },
+  {
+    "name": "dsh-web-plugin-manager",
+    "category": "UI界面增强类",
+    "source": "npm:dsh-web-plugin-manager",
+    "risk": "review",
+    "filesScanned": 5,
+    "findingsCount": 2,
+    "review": [
+      "T03 安装脚本（preinstall/postinstall/prepare）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 3231
+  },
+  {
+    "name": "dsh-better-edit",
+    "category": "工具效率类",
+    "source": "npm:dsh-better-edit",
+    "risk": "review",
+    "filesScanned": 87,
+    "findingsCount": 22,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 2010
+  },
+  {
+    "name": "dsh-git-rollback",
+    "category": "工具效率类",
+    "source": "npm:dsh-git-rollback",
+    "risk": "ok",
+    "filesScanned": 20,
+    "findingsCount": 1,
+    "review": [],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1187
+  },
+  {
+    "name": "dsh-cost-log",
+    "category": "工具效率类",
+    "source": "npm:dsh-cost-log",
+    "risk": "ok",
+    "filesScanned": 6,
+    "findingsCount": 1,
+    "review": [],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1090
+  },
+  {
+    "name": "rongyi7-dsh-stats",
+    "category": "工具效率类",
+    "source": "npm:@rongyi7/dsh-stats",
+    "risk": "review",
+    "filesScanned": 8,
+    "findingsCount": 3,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1394
+  },
+  {
+    "name": "linxin666-dsh-live-stats",
+    "category": "工具效率类",
+    "source": "npm:@linxin666/dsh-live-stats",
+    "risk": "review",
+    "filesScanned": 43,
+    "findingsCount": 6,
+    "review": [
+      "T08 读取会话日志（思维链/对话记录）",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 3120
+  }
+]

@@ -1,0 +1,425 @@
+[
+  {
+    "name": "deepseek-harness-quota-monitor",
+    "category": "工具效率类",
+    "source": "npm:deepseek-harness-quota-monitor",
+    "risk": "review",
+    "filesScanned": 5,
+    "findingsCount": 9,
+    "review": [
+      "T04 远程拉取代码并执行（fetch + eval/import）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T02",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1738
+  },
+  {
+    "name": "dsh-speak",
+    "category": "工具效率类",
+    "source": "npm:dsh-speak",
+    "risk": "review",
+    "filesScanned": 12,
+    "findingsCount": 10,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 618
+  },
+  {
+    "name": "dsh-win32",
+    "category": "工具效率类",
+    "source": "npm:dsh-win32",
+    "risk": "review",
+    "filesScanned": 23,
+    "findingsCount": 18,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 963
+  },
+  {
+    "name": "dsh-remote",
+    "category": "工具效率类",
+    "source": "npm:dsh-remote",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 5,
+    "review": [
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1080
+  },
+  {
+    "name": "noeljude-dsh-remote-plugin",
+    "category": "工具效率类",
+    "source": "npm:@noeljude/dsh-remote-plugin",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 2,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 2509
+  },
+  {
+    "name": "opendsh-dsh-plugin-setting-mcp",
+    "category": "MCP与集成类",
+    "source": "npm:@opendsh/dsh-plugin-setting-mcp",
+    "risk": "ok",
+    "filesScanned": 35,
+    "findingsCount": 3,
+    "review": [],
+    "notice": [
+      "T02",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1546
+  },
+  {
+    "name": "dsh-find-plugin",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-find-plugin",
+    "risk": "review",
+    "filesScanned": 14,
+    "findingsCount": 11,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 578
+  },
+  {
+    "name": "dsh-plug-manager",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-plug-manager",
+    "risk": "review",
+    "filesScanned": 5,
+    "findingsCount": 10,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1608
+  },
+  {
+    "name": "laizhixingxingdeli-dsh-coagenthub",
+    "category": "MCP与集成类",
+    "source": "npm:@laizhixingxingdeli/dsh-coagenthub",
+    "risk": "review",
+    "filesScanned": 23,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T09 client 端 DOM 注入（伪造审批弹窗）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1731
+  },
+  {
+    "name": "michengai-dsh-agency-agents",
+    "category": "MCP与集成类",
+    "source": "npm:@michengai/dsh-agency-agents",
+    "risk": "review",
+    "filesScanned": 309,
+    "findingsCount": 71,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T02 零宽/不可见字符注入",
+      "T02 零宽/不可见字符注入",
+      "T02 零宽/不可见字符注入",
+      "T06 读取敏感路径内容",
+      "T07 指令注入文本（hidden instruction）",
+      "T07 指令注入文本（hidden instruction）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 8260
+  },
+  {
+    "name": "dsh-codex-oauth",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-codex-oauth",
+    "risk": "review",
+    "filesScanned": 14,
+    "findingsCount": 10,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1013
+  },
+  {
+    "name": "linxin666-dsh-ssh",
+    "category": "MCP与集成类",
+    "source": "npm:@linxin666/dsh-ssh",
+    "risk": "review",
+    "filesScanned": 62,
+    "findingsCount": 27,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T02",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1870
+  },
+  {
+    "name": "dsh-wechat-mp",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-wechat-mp",
+    "risk": "review",
+    "filesScanned": 33,
+    "findingsCount": 14,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T03 安装脚本（preinstall/postinstall/prepare）",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 引用凭据/敏感路径",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 968
+  },
+  {
+    "name": "jkxie-dsh-deep-flow",
+    "category": "终端工作流类",
+    "source": "npm:@jkxie/dsh-deep-flow",
+    "risk": "review",
+    "filesScanned": 7,
+    "findingsCount": 7,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1217
+  },
+  {
+    "name": "deepseek-flow",
+    "category": "终端工作流类",
+    "source": "npm:deepseek-flow",
+    "risk": "review",
+    "filesScanned": 46,
+    "findingsCount": 14,
+    "review": [
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T01 内嵌 patch 文本禁用安全插件",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 7459
+  }
+]
