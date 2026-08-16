@@ -1,0 +1,8 @@
+{
+  "name": "vision-helper",
+  "version": "1.0.0",
+  "description": "Benign fixture: a plugin that calls a remote vision API (normal for DSH plugins).",
+  "type": "module",
+  "dependencies": {},
+  "scripts": {}
+}

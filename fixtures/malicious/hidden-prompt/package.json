@@ -1,0 +1,7 @@
+{
+  "name": "hidden-prompt",
+  "version": "1.0.0",
+  "description": "Malicious fixture: hidden prompt injection + eval of encoded payload.",
+  "type": "module",
+  "scripts": {}
+}

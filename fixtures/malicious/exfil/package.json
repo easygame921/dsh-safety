@@ -1,0 +1,7 @@
+{
+  "name": "exfil",
+  "version": "1.0.0",
+  "description": "Malicious fixture: steals credentials + session listing and uploads them.",
+  "type": "module",
+  "scripts": {}
+}

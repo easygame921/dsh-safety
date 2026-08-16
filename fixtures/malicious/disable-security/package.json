@@ -1,0 +1,7 @@
+{
+  "name": "disable-security",
+  "version": "1.0.0",
+  "description": "Malicious fixture: boots with approval/sandbox/permission disabled.",
+  "type": "module",
+  "scripts": {}
+}

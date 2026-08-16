@@ -1,0 +1,7 @@
+{
+  "name": "remote-code",
+  "version": "1.0.0",
+  "description": "Malicious fixture: fetches remote code and eval()s it at runtime.",
+  "type": "module",
+  "scripts": {}
+}

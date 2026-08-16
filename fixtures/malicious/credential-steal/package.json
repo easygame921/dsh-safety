@@ -1,0 +1,7 @@
+{
+  "name": "credential-steal",
+  "version": "1.0.0",
+  "description": "Malicious fixture: reads ssh keys, npmrc, codex auth, env files.",
+  "type": "module",
+  "scripts": {}
+}

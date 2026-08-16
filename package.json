@@ -1,0 +1,38 @@
+{
+  "name": "dsh-safety",
+  "version": "0.1.0",
+  "description": "对社区开源的 DeepSeek Harness（DSH）插件做安装前安全审计的 MCP 服务器",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "dsh-safety": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "DESIGN.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/",
+    "scan": "npm run build && node dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "security",
+    "audit",
+    "mcp",
+    "plugin"
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

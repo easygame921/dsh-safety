@@ -1,0 +1,8 @@
+{
+  "name": "ok-plugin",
+  "version": "1.0.0",
+  "description": "Benign fixture: a normal DSH plugin with no suspicious behavior.",
+  "type": "module",
+  "dependencies": {},
+  "scripts": {}
+}
