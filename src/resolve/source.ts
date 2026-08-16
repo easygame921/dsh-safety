@@ -67,14 +67,28 @@ export async function resolveSource(spec: SourceSpec, workDir: string): Promise<
   }
 
   if (spec.kind === 'npm') {
-    const packDir = join(workDir, 'npm-pack');
-    await fs.mkdir(packDir, { recursive: true });
-    await run('npm', ['pack', spec.value, '--pack-destination', packDir], workDir);
-    const tgz = (await fs.readdir(packDir)).find((f) => f.endsWith('.tgz'));
-    if (!tgz) throw new Error(`npm pack 未产出 tarball: ${spec.value}`);
+    // 安全直连 registry API：不 spawn npm（避免 shell/注入），下载 tarball 后 tar 解压
+    const name = spec.value;
+    const registryUrl = `https://registry.npmjs.org/${encodeURIComponent(name)}`;
+    const metaRes = await fetch(registryUrl, { signal: AbortSignal.timeout(60000) });
+    if (!metaRes.ok) throw new Error(`npm registry 查询失败: HTTP ${metaRes.status} (${name})`);
+    const meta = await metaRes.json() as {
+      'dist-tags'?: Record<string, string>;
+      versions?: Record<string, { dist?: { tarball?: string } }>;
+      dist?: { tarball?: string };
+    };
+    const latestTag = meta?.['dist-tags']?.latest;
+    const tarballUrl = meta?.dist?.tarball
+      ?? (latestTag && meta?.versions?.[latestTag]?.dist?.tarball)
+      ?? (meta?.versions && Object.values(meta.versions)[0]?.dist?.tarball);
+    if (typeof tarballUrl !== 'string') throw new Error(`npm 包无 tarball: ${name}`);
+    const tgzRes = await fetch(tarballUrl, { signal: AbortSignal.timeout(120000) });
+    if (!tgzRes.ok) throw new Error(`tarball 下载失败: HTTP ${tgzRes.status}`);
+    const tgzPath = join(workDir, 'pkg.tgz');
+    await fs.writeFile(tgzPath, Buffer.from(await tgzRes.arrayBuffer()));
     const target = join(workDir, 'npm-extract');
     await fs.mkdir(target, { recursive: true });
-    await run('tar', ['-xzf', join(packDir, tgz), '-C', target], workDir);
+    await run('tar', ['-xzf', tgzPath, '-C', target], workDir);
     return findRoot(target);
   }
 
