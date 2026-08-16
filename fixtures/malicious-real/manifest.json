@@ -89,6 +89,23 @@
         "T10"
       ],
       "technique": "双面代码：表面注册正常工具，夹带 prompt 注入文本并写 shell 启动文件（诱饵式后门）"
+    },
+    {
+      "dir": "supply-chain-poison",
+      "label": "依赖链投毒（已知恶意包 + typosquatting + 通配版本）",
+      "expected": [
+        "T14"
+      ],
+      "technique": "npm 供应链投毒：event-stream/ua-parser-js 类事件——依赖声明本身即攻击载体（被投毒包、lodahs/axois 相似名、latest 通配可被投毒自动升级）"
+    },
+    {
+      "dir": "registry-tampering",
+      "label": "registry 替换 + 安装脚本下载（T03+T14 复合）",
+      "expected": [
+        "T03",
+        "T14"
+      ],
+      "technique": "供应链投毒组合：.npmrc 替换 registry 指向恶意源 + postinstall 从恶意源拉取载荷"
     }
   ]
 }

@@ -267,15 +267,33 @@ export const v1Rules: SafetyRule[] = [
     id: 'T09-002',
     threatId: 'T09',
     severity: 'review',
-    title: '键盘/剪贴板监听',
-    description: '监听键盘输入或读取剪贴板——窃取用户输入（含密码/密钥）。',
+    title: '键盘/剪贴板监听 + 记录/外发组合',
+    description: '监听键盘或读取剪贴板，且与网络外发（fetch/sendBeacon/WebSocket）、剪贴板读取或本地存储组合——构成窃取用户输入（密码/密钥）的证据。',
+    fileGlobs: ['**/client*.{js,ts,mjs,cjs}'],
+    combinators: [
+      {
+        name: 'keylog-exfil',
+        allOf: [
+          'addEventListener\\s*\\(\\s*[\'"](keydown|keyup|keypress|paste)|onkeydown|onkeyup|onpaste',
+          'fetch\\s*\\(|sendBeacon|WebSocket|XMLHttpRequest|navigator\\.clipboard\\.readText|localStorage|indexedDB',
+        ],
+      },
+    ],
+    falsePositiveNotes: '命令面板/快捷键插件单独监听键盘（无记录/外发）不命中——由 T09-003 以 notice 提示；需监听与网络/剪贴板/存储邻近共存。',
+  },
+  {
+    id: 'T09-003',
+    threatId: 'T09',
+    severity: 'notice',
+    title: '键盘/剪贴板监听（中性能力，命令面板常见）',
+    description: '监听键盘输入或读取剪贴板但无外发/存储组合——命令面板、快捷键、粘贴增强等正常功能；与 T09-002 组合或网络调用共存时升级。',
     fileGlobs: ['**/client*.{js,ts,mjs,cjs}'],
     patterns: [
       'addEventListener\\s*\\(\\s*[\'"](keydown|keyup|keypress|paste)',
       'navigator\\.clipboard\\.readText|document\\.execCommand\\s*\\(\\s*[\'"]paste',
       'onkeydown|onkeyup|onpaste',
     ],
-    falsePositiveNotes: '部分插件（如命令面板）监听键盘；重点看是否记录/外发输入。',
+    falsePositiveNotes: '命令面板/输入增强插件监听键盘属正常；重点是记录后是否外发（T09-002）。',
   },
 
   // ── T10 持久化驻留 ─────────────────────────────────────────────────────
@@ -326,5 +344,37 @@ export const v1Rules: SafetyRule[] = [
       },
     ],
     falsePositiveNotes: '需 DNS API 与敏感读取同文件共存。',
+  },
+
+  // ── T14 依赖链投毒 ─────────────────────────────────────────────────────
+  {
+    id: 'T14-001',
+    threatId: 'T14',
+    severity: 'review',
+    title: '依赖链投毒（已知恶意包 / typosquatting / 可疑来源）',
+    description: 'package.json 依赖声明命中：已知被投毒/恶意包名单（event-stream、ua-parser-js 投毒版、node-ipc 等真实事件）、与高价值知名包长度相同且仅 1 字符差异的疑似 typosquatting（lodahs/axois 类）、或可疑来源协议（file:/git+/http://——供应链投毒常见载体）。',
+    fileGlobs: ['**/package.json'],
+    fileChecks: ['pkg-deps-audit'],
+    falsePositiveNotes: 'typosquat 判定要求"长度相同 + 编辑距离 1"（短词 2 字符差异如 clsx/tsx、vitest/vite 为合法包不报）；file: 依赖在 monorepo 开发中正常——review 仅提示复核依赖来源可信度。',
+  },
+  {
+    id: 'T14-003',
+    threatId: 'T14',
+    severity: 'notice',
+    title: '通配版本依赖（* / latest）',
+    description: '依赖版本为 * / latest——安装时始终拉取最新版，依赖被投毒后自动升级；DSH 官方 @deepseek-ai/* 包用通配是生态标准做法，故仅提示。',
+    fileGlobs: ['**/package.json'],
+    fileChecks: ['pkg-dep-wide-range'],
+    falsePositiveNotes: 'DSH 官方 @deepseek-ai/* 包、开发期私有项目用通配属正常；第三方包用通配提示锁定版本。',
+  },
+  {
+    id: 'T14-002',
+    threatId: 'T14',
+    severity: 'review',
+    title: 'registry 篡改（.npmrc 指向非官方源）',
+    description: '插件携带 .npmrc 将 npm registry 指向非 https 或非官方源——安装时所有依赖从被控源拉取，是供应链投毒的高级形态（2024 年多个真实事件）。',
+    fileGlobs: ['**/.npmrc'],
+    patterns: ['^\\s*registry\\s*=\\s*http://', '^\\s*registry\\s*=\\s*[^h]|^\\s*registry\\s*=\\s*https?://(?!registry\\.npmjs\\.org)'],
+    falsePositiveNotes: '企业内网镜像（如 Verdaccio）使用自定义 registry 属正常；命中提示复核 registry 归属与是否 https。',
   },
 ];
