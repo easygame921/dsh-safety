@@ -4,7 +4,7 @@
 import type { Evidence, Finding, SafetyRule } from '../types.js';
 import type { ScannedFile } from './files.js';
 import { matchPattern, matchPath, isCommentLine } from './matchers.js';
-import { patchDisablesSecurity, pkgInstallScripts } from './manifest.js';
+import { patchDisablesSecurity, pkgInstallScripts, pkgDepsAudit, pkgDepWideRange } from './manifest.js';
 import { runAstChecks } from './ast.js';
 
 function globToRe(glob: string): RegExp {
@@ -148,6 +148,8 @@ function runRuleOnFile(file: ScannedFile, rule: SafetyRule): Evidence[] {
   for (const check of rule.fileChecks ?? []) {
     if (check === 'pkg-install-scripts') ev.push(...pkgInstallScripts(file.content, file.relPath));
     if (check === 'patch-disables-security') ev.push(...patchDisablesSecurity(file.content, file.relPath));
+    if (check === 'pkg-deps-audit') ev.push(...pkgDepsAudit(file.content, file.relPath));
+    if (check === 'pkg-dep-wide-range') ev.push(...pkgDepWideRange(file.content, file.relPath));
   }
   if (rule.astChecks && rule.astChecks.length > 0) {
     ev.push(...runAstChecks(file.content, file.relPath, rule.astChecks));

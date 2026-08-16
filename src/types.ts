@@ -58,7 +58,9 @@ export interface SafetyRule {
 /** 文件级检查 id（引擎内置实现） */
 export type FileCheckId =
   | 'pkg-install-scripts' // package.json scripts.preinstall/postinstall/prepare
-  | 'patch-disables-security'; // cordis.patch.yml / 内嵌 patch：disabled 安全插件
+  | 'patch-disables-security' // cordis.patch.yml / 内嵌 patch：disabled 安全插件
+  | 'pkg-deps-audit' // 依赖链审计：typosquatting 相似名 / 可疑协议 / 已知恶意包名单
+  | 'pkg-dep-wide-range'; // 通配版本（* / latest）依赖——提示级
 
 /** AST 级检查 id（引擎内置实现，轻量语义增强） */
 export type AstCheckId =

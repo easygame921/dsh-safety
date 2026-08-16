@@ -16,7 +16,7 @@ export interface ScannedFile {
 const EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', '.dsh-safety-cache']);
 /** excludeTests 时额外排除的测试/夹具目录 */
 export const TEST_EXCLUDE_DIRS = ['tests', '__tests__', 'test', 'spec', '__specs__', 'fixtures'];
-const INCLUDE_EXT = new Set(['.js', '.ts', '.mjs', '.cjs', '.json', '.yml', '.yaml', '.md', '.ps1', '.sh', '.jsx', '.tsx']);
+const INCLUDE_EXT = new Set(['.js', '.ts', '.mjs', '.cjs', '.json', '.yml', '.yaml', '.md', '.ps1', '.sh', '.jsx', '.tsx', '.npmrc', '.lock', '.lockb', '.patch']);
 
 export interface DiscoverOptions {
   maxFiles?: number;
@@ -52,7 +52,9 @@ export async function discoverFiles(root: string, opts: DiscoverOptions = {}): P
       }
       if (!entry.isFile()) continue;
       const ext = extname(entry.name).toLowerCase();
-      if (!INCLUDE_EXT.has(ext)) continue;
+      // dotfile（.npmrc/.lock 等）extname 返回空串——按完整文件名匹配
+      const matchKey = ext || entry.name.toLowerCase();
+      if (!INCLUDE_EXT.has(ext) && !INCLUDE_EXT.has(matchKey)) continue;
       // 类型声明文件无运行行为，排除（避免 .d.ts 误报）
       if (entry.name.endsWith('.d.ts') || entry.name.endsWith('.d.mts') || entry.name.endsWith('.d.cts')) continue;
       if ((opts.excludeExts ?? []).includes(ext)) continue;
