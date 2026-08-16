@@ -92,14 +92,30 @@ export async function resolveSource(spec: SourceSpec, workDir: string): Promise<
     return findRoot(target);
   }
 
-  // github
+  // github（直连失败时依次尝试镜像，适配 GitHub 不稳定网络环境）
   const repoName = spec.value.split('/').pop()?.replace(/\.git$/, '') ?? 'repo';
   const target = join(workDir, repoName);
-  const url = spec.value.startsWith('http') || spec.value.startsWith('git@')
+  const direct = spec.value.startsWith('http') || spec.value.startsWith('git@')
     ? spec.value
     : `https://github.com/${spec.value}.git`;
-  await run('git', ['clone', '--depth', '1', url, target], workDir);
-  return target;
+  const mirrors = [
+    direct,
+    // 常见 GitHub 加速镜像（直连失败时兜底）
+    direct.startsWith('https://github.com/') ? `https://gh-proxy.com/${direct}` : null,
+    direct.startsWith('https://github.com/') ? `https://ghfast.top/${direct}` : null,
+  ].filter((v): v is string => v !== null);
+  let lastErr: unknown = null;
+  for (const url of mirrors) {
+    try {
+      await run('git', ['clone', '--depth', '1', url, target], workDir, 180000);
+      return target;
+    } catch (err) {
+      lastErr = err;
+      // 清掉失败 clone 的残留目录再试下一个镜像
+      try { await fs.rm(target, { recursive: true, force: true }); } catch { /* 忽略 */ }
+    }
+  }
+  throw new Error(`GitHub 克隆失败（直连与镜像均不可用）：${lastErr instanceof Error ? lastErr.message : String(lastErr)}`);
 }
 
 /** 一键：解析来源 → 建 workDir → 拉取 → 返回 { root, workDir, cleanup } */
