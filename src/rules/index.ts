@@ -37,7 +37,11 @@ export const v1Rules: SafetyRule[] = [
     title: '零宽/不可见字符注入',
     description: '源码包含零宽字符（\\u200B\\u200C\\u200D\\uFEFF 等）或 Unicode 控制字符——2025 年已出现用此类字符隐藏 prompt 指令、规避 AI 安全扫描器的恶意 npm 包。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs,json,yml,yaml,md}'],
-    patterns: ['[\\u200B\\u200C\\u200D\\uFEFF\\u2060\\u200E\\u200F]', '[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]'],
+    patterns: [
+      '[\\u200B\\u200C\\u200D\\uFEFF\\u2060\\u200E\\u200F]',
+      '\\\\u200[bcd]', // 转义文本形态（\u200b）——真实攻击者用转义规避字符集检测
+      '[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]',
+    ],
     falsePositiveNotes: '部分 i18n 文件可能含少见 Unicode；命中即提示人工检查上下文。',
   },
   {
@@ -115,6 +119,7 @@ export const v1Rules: SafetyRule[] = [
     title: '敏感数据外传（网络 + 敏感读取组合）',
     description: '同一文件同时出现网络调用与敏感数据读取（读取对象含凭据/密钥/会话等敏感词，或执行进程并取输出），构成数据外带模式。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    astChecks: ['exfil-flow'],
     combinators: [
       {
         name: 'network+sensitive-read',
@@ -124,7 +129,7 @@ export const v1Rules: SafetyRule[] = [
         ],
       },
     ],
-    falsePositiveNotes: '良性 vision 插件（网络 + 无敏感读取）不命中；需敏感读取与网络同文件共存。',
+    falsePositiveNotes: '良性 vision 插件（网络 + 无敏感读取）不命中；需敏感读取与网络同文件共存；ast:exfil-flow 抓"readFile→变量→fetch"数据流形态（跨行拆分绕过）。',
   },
   {
     id: 'T05-002',
@@ -265,11 +270,13 @@ export const v1Rules: SafetyRule[] = [
     fileGlobs: ['**/*.{js,ts,mjs,cjs,ps1,sh,json}'],
     patterns: [
       '(\\~|HOME|USERPROFILE)[\\\\/](\\.zshrc|\\.bashrc|\\.profile|\\.bash_profile|\\.config[\\\\/]autostart)',
+      '(homedir|os\\.homedir)[^\\n]{0,80}(\\.zshrc|\\.bashrc|\\.profile|\\.bash_profile|\\.config[\\\\/]autostart)',
+      '(appendFileSync|writeFileSync|appendFile|writeFile)[^\\n]{0,60}(\\.zshrc|\\.bashrc|\\.profile|\\.bash_profile)',
       'schtasks|TaskScheduler|Register-ScheduledTask|\\/etc\\/systemd|rc\\.local|\\/etc\\/init\\.d',
       'HKEY_CURRENT_USER[\\\\/]Software[\\\\/]Microsoft[\\\\/]Windows[\\\\/]CurrentVersion[\\\\/]Run',
       'Startup[\\\\/]|startup\\s*folder|CreateShortcut',
     ],
-    falsePositiveNotes: '正常工具可能写配置到 ~/.config；重点看 rc 文件/计划任务/注册表 Run。',
+    falsePositiveNotes: '正常工具可能写配置到 ~/.config；重点看 rc 文件/计划任务/注册表 Run；homedir()/write 组合需写 API 与启动文件名同时出现。',
   },
 
   // ── T11 DNS 外带 ───────────────────────────────────────────────────────

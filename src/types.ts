@@ -63,7 +63,8 @@ export type FileCheckId =
 /** AST 级检查 id（引擎内置实现，轻量语义增强） */
 export type AstCheckId =
   | 'eval-source' // eval(变量) 且变量初始化来自 base64 解码（Buffer.from/atob）
-  | 'folded-sensitive-path'; // 变量拼接/模板字面量折叠后含敏感路径（对抗拼接绕过）
+  | 'folded-sensitive-path' // 变量拼接/模板字面量折叠后含敏感路径（对抗拼接绕过）
+  | 'exfil-flow'; // 敏感读取结果变量流入 fetch 实参（对抗"readFile→变量→fetch"多行拆分）
 
 /** 组合规则：一组子特征在**同一文件**内共存才命中 */
 export interface CombinatorRule {

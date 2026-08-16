@@ -144,20 +144,137 @@ function collectBindings(ast: ReturnType<typeof parse>): {
   return { bindings, decoded, sensitiveFolded, sensitiveExprs };
 }
 
-/** 检查 eval 实参：直接解码表达式 或 变量（绑定值含敏感串 / 来自解码） */
+/** 检查 eval/new Function 实参：直接解码表达式 或 变量（绑定值含敏感串 / 来自解码） */
 function findEvalSources(ast: ReturnType<typeof parse>, bindings: Map<string, string>, decoded: Set<string>): string[] {
+  const out: string[] = [];
+  const visit = (n: Node) => {
+    let arg: Node | undefined;
+    let kind = '';
+    if (n.type === 'CallExpression') {
+      const callee = n.callee as Node | undefined;
+      if (callee?.type !== 'Identifier' || callee.name !== 'eval') return;
+      arg = (n.arguments as Array<Node>)?.[0];
+      kind = 'eval';
+    } else if (n.type === 'NewExpression' || (n.type === 'CallExpression' && (n.callee as Node | undefined)?.type === 'Identifier' && (n.callee as Node | undefined)?.name === 'Function')) {
+      const callee = n.callee as Node | undefined;
+      if (callee?.type !== 'Identifier' || callee.name !== 'Function') return;
+      arg = (n.arguments as Array<Node>)?.[0];
+      kind = 'new Function';
+    } else {
+      return;
+    }
+    if (!arg) return;
+    if (arg.type === 'Identifier' && typeof arg.name === 'string') {
+      if (decoded.has(arg.name)) out.push(`${kind}(${arg.name}) ← base64 解码载荷`);
+      else if (bindings.has(arg.name)) out.push(`${kind}(${arg.name}) ← 变量间接执行`);
+    } else if (isDecodedExpr(arg)) {
+      out.push(`${kind}(解码表达式)`);
+    }
+  };
+  walk(ast, visit);
+  return out;
+}
+
+/** 折叠 path.join/resolve(...) 调用：收集全部可折叠实参（不可折叠的忽略），拼接测试敏感路径 */
+function foldPathCall(node: Node | undefined, bindings: Map<string, string>): string | undefined {
+  if (!node || node.type !== 'CallExpression') return undefined;
+  const callee = node.callee as Node | undefined;
+  const name =
+    callee?.type === 'Identifier'
+      ? callee.name
+      : callee?.type === 'MemberExpression'
+        ? (callee.property as Node | undefined)?.name
+        : undefined;
+  if (name !== 'join' && name !== 'resolve') return undefined;
+  const args = (node.arguments as Array<Node>) ?? [];
+  const parts: string[] = [];
+  for (const a of args) {
+    const v = literalString(a, bindings);
+    if (v !== undefined) parts.push(v);
+  }
+  if (parts.length === 0) return undefined;
+  return parts.join('/');
+}
+
+/**
+ * 解析一个"可能含敏感路径"的表达式为字符串：
+ * 字面量 → 变量回查 init → path.join/resolve 折叠（宽容：只拼可折叠片段）。
+ */
+function resolvePathExpr(
+  node: Node | undefined,
+  bindings: Map<string, string>,
+  varInits: Map<string, Node>,
+): string | undefined {
+  if (!node) return undefined;
+  const direct = literalString(node, bindings);
+  if (direct !== undefined) return direct;
+  if (node.type === 'Identifier' && typeof node.name === 'string') {
+    const init = varInits.get(node.name);
+    if (init) return resolvePathExpr(init, bindings, varInits);
+  }
+  if (node.type === 'CallExpression') return foldPathCall(node, bindings);
+  return undefined;
+}
+
+/**
+ * 数据流外传检查（对抗"readFile → 变量 → fetch"的多行拆分）：
+ * 1) 收集赋值自"敏感路径读取"的变量（readFileSync(敏感路径)/execSync 取输出等）；
+ * 2) 若该变量出现在 fetch 的实参（body 等）中 → 敏感数据流入网络，构成外传证据。
+ */
+function findExfilFlows(ast: ReturnType<typeof parse>, bindings: Map<string, string>): string[] {
+  const varInits = new Map<string, Node>();
+  walk(ast, (n) => {
+    if (n.type !== 'VariableDeclaration') return;
+    for (const decl of (n.declarations as Array<Node>) ?? []) {
+      const id = decl.id as Node | undefined;
+      if (id?.type === 'Identifier' && typeof id.name === 'string' && decl.init) {
+        varInits.set(id.name, decl.init as Node);
+      }
+    }
+  });
+  const sensitiveReadVars = new Set<string>();
+  walk(ast, (n) => {
+    if (n.type !== 'VariableDeclaration') return;
+    for (const decl of (n.declarations as Array<Node>) ?? []) {
+      const id = decl.id as Node | undefined;
+      const init = decl.init as Node | undefined;
+      if (id?.type !== 'Identifier' || typeof id.name !== 'string' || !init) continue;
+      if (init.type !== 'CallExpression') continue;
+      const callee = init.callee as Node | undefined;
+      const name: string | undefined =
+        callee?.type === 'Identifier'
+          ? String(callee.name ?? '')
+          : callee?.type === 'MemberExpression'
+            ? String((callee.property as Node | undefined)?.name ?? '')
+            : undefined;
+      if (!name) continue;
+      const readLike = ['readFileSync', 'readFile', 'readdirSync', 'execFileSync', 'execSync', 'spawnSync', 'spawn'].includes(name);
+      if (!readLike) continue;
+      const arg0 = (init.arguments as Array<Node>)?.[0];
+      const folded = resolvePathExpr(arg0, bindings, varInits);
+      if (folded && SENSITIVE_PATH_RE.test(folded)) sensitiveReadVars.add(id.name);
+    }
+  });
+  if (sensitiveReadVars.size === 0) return [];
   const out: string[] = [];
   walk(ast, (n) => {
     if (n.type !== 'CallExpression') return;
     const callee = n.callee as Node | undefined;
-    if (callee?.type !== 'Identifier' || callee.name !== 'eval') return;
-    const arg = (n.arguments as Array<Node>)?.[0];
-    if (!arg) return;
-    if (arg.type === 'Identifier' && typeof arg.name === 'string') {
-      if (decoded.has(arg.name)) out.push(`eval(${arg.name}) ← base64 解码载荷`);
-      else if (bindings.has(arg.name)) out.push(`eval(${arg.name}) ← 变量间接执行`);
-    } else if (isDecodedExpr(arg)) {
-      out.push('eval(解码表达式)');
+    if (callee?.type !== 'Identifier' || callee.name !== 'fetch') return;
+    const args = (n.arguments as Array<Node>) ?? [];
+    const usedNames = new Set<string>();
+    for (const a of args) {
+      if (a.type === 'Identifier' && typeof a.name === 'string') usedNames.add(a.name);
+      if (a.type === 'ObjectExpression') {
+        for (const p of (a.properties as Array<Node>) ?? []) {
+          const v = (p as { value?: Node }).value;
+          const vname = v?.type === 'Identifier' ? String(v.name ?? '') : '';
+          if (vname) usedNames.add(vname);
+        }
+      }
+    }
+    for (const v of sensitiveReadVars) {
+      if (usedNames.has(v)) out.push(`readFile(敏感路径) → ${v} → fetch 外传`);
     }
   });
   return out;
@@ -201,6 +318,11 @@ export function runAstChecks(content: string, file: string, checks: AstCheckId[]
           snippet: `拼接表达式折叠后为敏感路径：${value}（敏感词被拆片，与读取调用共存）`,
         });
       }
+    }
+  }
+  if (checks.includes('exfil-flow')) {
+    for (const s of findExfilFlows(ast, bindings)) {
+      out.push({ file, line: 0, pattern: 'ast:exfil-flow', snippet: s });
     }
   }
   return out;
