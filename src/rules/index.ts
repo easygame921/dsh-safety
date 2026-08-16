@@ -39,10 +39,8 @@ export const v1Rules: SafetyRule[] = [
     fileGlobs: ['**/*.{js,ts,mjs,cjs,json,yml,yaml,md}'],
     patterns: [
       '[\\u200B\\u200C\\u200D\\uFEFF\\u2060\\u200E\\u200F]',
-      '\\\\u200[bcd]', // 转义文本形态（\u200b）——真实攻击者用转义规避字符集检测
-      '[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]',
     ],
-    falsePositiveNotes: '部分 i18n 文件可能含少见 Unicode；命中即提示人工检查上下文。',
+    falsePositiveNotes: '真实零宽/不可见 Unicode 字符才算注入信号；转义文本形态（\\u200b）由 T02-005 以 notice 提示（UI 插件常用零宽空格占位）。',
   },
   {
     id: 'T02-002',
@@ -70,6 +68,27 @@ export const v1Rules: SafetyRule[] = [
     fileGlobs: ['**/*.{js,ts,mjs,cjs,json}'],
     patterns: ['[A-Za-z0-9+/]{80,}={0,2}', '[0-9a-fA-F]{80,}'],
     falsePositiveNotes: 'license 文件、测试向量可能误报；与 T02-001/002 组合评估。',
+  },
+
+  {
+    id: 'T02-004',
+    threatId: 'T02',
+    severity: 'notice',
+    title: 'C0 控制字符（分隔符/信号，多为正常编码）',
+    description: '源码字符串含 C0 控制字符（\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F）——多数是正常分隔符（\\x1f 字段分隔）、信号字符或 minify 产物；仅在与隐藏指令上下文（T02-001 零宽）组合时升级。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs,json,yml,yaml,md}'],
+    patterns: ['[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]'],
+    falsePositiveNotes: '常见于字符串分隔符（\\x1f）、信号字符（\\x1a）、压缩产物；独立出现为 notice，不与零宽字符混用时无实害。',
+  },
+  {
+    id: 'T02-005',
+    threatId: 'T02',
+    severity: 'notice',
+    title: '零宽字符转义文本（\\u200b——UI 占位常用，提示级）',
+    description: '源码含零宽字符的转义文本形态（如 \'\\u200b\'）——UI 插件常用零宽空格做光标/占位（合法），真实攻击者也可能用转义规避字符集检测；与真实零宽（T02-001 review）区分，独立出现降为 notice。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs,json,yml,yaml,md}'],
+    patterns: ['\\\\u200[bcd]'],
+    falsePositiveNotes: 'caret/占位符场景常见；独立出现为 notice，配合隐藏指令文本或真实零宽时由 T02-001/组合升级。',
   },
 
   // ── T03 安装生命周期攻击 ──────────────────────────────────────────────
@@ -125,11 +144,11 @@ export const v1Rules: SafetyRule[] = [
         name: 'network+sensitive-read',
         allOf: [
           'fetch\\s*\\(|https?\\.[a-z]+\\s*\\(|WebSocket|axios|request\\s*\\(',
-          'readFile[^\\n]{0,120}(credential|id_rsa|\\.ssh|\\.npmrc|(?<![\\w.])[.]env\\b|secret|token|key|session)|execFile|execSync|spawn\\s*\\(',
+          'readFile[^\\n]{0,120}(\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|\\.aws|\\.kube|auth\\.json|(?<![\\w.])[.]env\\b|credential)',
         ],
       },
     ],
-    falsePositiveNotes: '良性 vision 插件（网络 + 无敏感读取）不命中；需敏感读取与网络同文件共存；ast:exfil-flow 抓"readFile→变量→fetch"数据流形态（跨行拆分绕过）。',
+    falsePositiveNotes: '良性 vision 插件（网络 + 无敏感读取）不命中；"网络 + 执行子进程"（如下载工具二进制后运行）不属于外传——凭据经子进程读取由 T06-002 的 ast:credential-read 覆盖；敏感读取须与网络调用在 ±2000 字符内共存（组合邻近语义）；ast:exfil-flow 抓"readFile→变量→fetch"数据流形态（跨行拆分绕过）。',
   },
   {
     id: 'T05-002',
@@ -159,16 +178,10 @@ export const v1Rules: SafetyRule[] = [
     threatId: 'T06',
     severity: 'review',
     title: '读取敏感路径内容',
-    description: '用 fs/child_process 读取凭据或个人信息文件的完整内容——窃取凭据的直接证据（含变量拼接敏感路径的对抗形态）。',
+    description: '用 fs/child_process 读取凭据或个人信息文件的完整内容——窃取凭据的直接证据（AST 精确判定：读取调用实参经字面量/变量回查/join 折叠后即敏感路径；含 targets.map(readFileSync) 数组形态）。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
-    astChecks: ['folded-sensitive-path'],
-    combinators: [
-      {
-        name: 'read-credential-path',
-        allOf: ['readFile|readFileSync|execFile|execSync|spawn|exec\\s*\\(', '\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|(?<![\\w.])[.]env\\b|credential'],
-      },
-    ],
-    falsePositiveNotes: '需"读取 API + 敏感路径"同文件共存；扫描器自身代码排除在外。',
+    astChecks: ['credential-read', 'folded-sensitive-path'],
+    falsePositiveNotes: '需"读取调用的实参（折叠后）本身就是敏感路径"；读普通文件 + 同文件碰巧出现敏感词不命中（消除宽泛窗口误报）。',
   },
 
   // ── T07 prompt 注入 ─────────────────────────────────────────────────────
@@ -182,11 +195,11 @@ export const v1Rules: SafetyRule[] = [
     patterns: [
       'ignore\\s+(all\\s+)?previous\\s+(instructions|prompts|rules)',
       '\\u4e0d\\u8981\\u7ba1\\u4e4b\\u524d|\\u5ffd\\u7565\\u4e4b\\u524d|\\u4e0d\\u7528\\u7406\\u4f1a\\u4e4b\\u524d',
-      '\\u4f60\\u73b0\\u5728\\u662f|\\u4f60\\u5c31\\u662f|\\u4f60\\u8981\\u88c5\\u4f5c|pretend\\s+(you are|to be)|act\\s+as\\s+',
+      '\\u4f60\\u73b0\\u5728\\u662f|\\u4f60\\u5c31\\u662f|\\u4f60\\u8981\\u88c5\\u4f5c|pretend\\s+(you are|to be)',
       'do\\s+not\\s+(tell|reveal|mention).{0,40}(user|human)',
       '\\u4e0d\\u8981\\u544a\\u8bc9\\u7528\\u6237|\\u4e0d\\u8981\\u63d0\\u53ca|\\u9690\\u85cf.{0,10}\\u4e0b\\u9762',
     ],
-    falsePositiveNotes: '安全测试/提示词工程类插件可能含此类文本；结合文件角色（prompt/preset 文件 vs 普通代码）判断。',
+    falsePositiveNotes: '安全测试/提示词工程类插件可能含此类文本；结合文件角色（prompt/preset 文件 vs 普通代码）判断；act as 等通用短语不作为注入信号。',
   },
   {
     id: 'T07-002',
@@ -207,11 +220,16 @@ export const v1Rules: SafetyRule[] = [
     description: '注入 agent-loop 或读取/改写 reasoning、trajectory、消息内容——劫持思维链或篡改对话历史。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     patterns: [
-      'agent[-_]loop',
-      'trajectory|reasoning[-_]?content',
+      'agent[-_]loop\\s*(\\{|\\()|hook\\(\\s*[\'"]agent[-_]loop',
       'ctx\\.sessions\\.(get|set|update|mutate)\\s*\\([^)]*(content|message|reasoning|trajectory)',
     ],
-    falsePositiveNotes: '仅命中 agent-loop 注入、reasoning/trajectory 读写、会话内容改写；普通会话事件监听（session/start 等）不命中。',
+    combinators: [
+      {
+        name: 'reasoning-access',
+        allOf: ['trajectory|reasoning[-_]?content', 'ctx\\.|hook\\s*\\(|readFile|sessions\\.'],
+      },
+    ],
+    falsePositiveNotes: '仅命中 agent-loop 注入/调用、reasoning/trajectory 访问（须与 ctx/hook/readFile 邻近）、会话内容改写；普通会话事件监听与纯文本提及（如市场描述中的插件名）不命中。',
   },
   {
     id: 'T08-002',
@@ -274,9 +292,10 @@ export const v1Rules: SafetyRule[] = [
       '(appendFileSync|writeFileSync|appendFile|writeFile)[^\\n]{0,60}(\\.zshrc|\\.bashrc|\\.profile|\\.bash_profile)',
       'schtasks|TaskScheduler|Register-ScheduledTask|\\/etc\\/systemd|rc\\.local|\\/etc\\/init\\.d',
       'HKEY_CURRENT_USER[\\\\/]Software[\\\\/]Microsoft[\\\\/]Windows[\\\\/]CurrentVersion[\\\\/]Run',
-      'Startup[\\\\/]|startup\\s*folder|CreateShortcut',
+      'Startup[\\\\/]|startup\\s*folder',
+      '(Startup[\\\\/]|startup\\s*folder)[^\\n]{0,120}CreateShortcut|CreateShortcut[^\\n]{0,120}(Startup[\\\\/]|startup\\s*folder)',
     ],
-    falsePositiveNotes: '正常工具可能写配置到 ~/.config；重点看 rc 文件/计划任务/注册表 Run；homedir()/write 组合需写 API 与启动文件名同时出现。',
+    falsePositiveNotes: '正常工具可能写配置到 ~/.config；桌面快捷方式（CreateShortcut 到 Desktop）不算驻留——须写入启动目录/计划任务/注册表 Run 或 rc 文件；homedir()/write 组合需写 API 与启动文件名同时出现。',
   },
 
   // ── T11 DNS 外带 ───────────────────────────────────────────────────────
