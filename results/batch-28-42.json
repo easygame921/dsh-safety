@@ -1,0 +1,268 @@
+[
+  {
+    "name": "rongyi7-dsh-stats",
+    "category": "工具效率类",
+    "source": "npm:@rongyi7/dsh-stats",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 3,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1752
+  },
+  {
+    "name": "linxin666-dsh-live-stats",
+    "category": "工具效率类",
+    "source": "npm:@linxin666/dsh-live-stats",
+    "risk": "ok",
+    "filesScanned": 41,
+    "findingsCount": 3,
+    "review": [],
+    "notice": [
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1185
+  },
+  {
+    "name": "deepseek-harness-quota-monitor",
+    "category": "工具效率类",
+    "source": "npm:deepseek-harness-quota-monitor",
+    "risk": "review",
+    "filesScanned": 4,
+    "findingsCount": 7,
+    "review": [
+      "T04 远程拉取代码并执行（fetch + eval/import）",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T02",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1350
+  },
+  {
+    "name": "dsh-speak",
+    "category": "工具效率类",
+    "source": "npm:dsh-speak",
+    "risk": "review",
+    "filesScanned": 8,
+    "findingsCount": 2,
+    "review": [
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 630
+  },
+  {
+    "name": "dsh-win32",
+    "category": "工具效率类",
+    "source": "npm:dsh-win32",
+    "risk": "review",
+    "filesScanned": 21,
+    "findingsCount": 5,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 934
+  },
+  {
+    "name": "dsh-remote",
+    "category": "工具效率类",
+    "source": "npm:dsh-remote",
+    "risk": "review",
+    "filesScanned": 4,
+    "findingsCount": 3,
+    "review": [
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 887
+  },
+  {
+    "name": "noeljude-dsh-remote-plugin",
+    "category": "工具效率类",
+    "source": "npm:@noeljude/dsh-remote-plugin",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 2,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 1038
+  },
+  {
+    "name": "opendsh-dsh-plugin-setting-mcp",
+    "category": "MCP与集成类",
+    "source": "npm:@opendsh/dsh-plugin-setting-mcp",
+    "risk": "ok",
+    "filesScanned": 33,
+    "findingsCount": 3,
+    "review": [],
+    "notice": [
+      "T02",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 3958
+  },
+  {
+    "name": "dsh-find-plugin",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-find-plugin",
+    "risk": "ok",
+    "filesScanned": 12,
+    "findingsCount": 8,
+    "review": [],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1845
+  },
+  {
+    "name": "dsh-plug-manager",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-plug-manager",
+    "risk": "review",
+    "filesScanned": 4,
+    "findingsCount": 8,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T09 键盘/剪贴板监听"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 2032
+  },
+  {
+    "name": "laizhixingxingdeli-dsh-coagenthub",
+    "category": "MCP与集成类",
+    "source": "npm:@laizhixingxingdeli/dsh-coagenthub",
+    "risk": "review",
+    "filesScanned": 22,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T09 client 端 DOM 注入（伪造审批弹窗）"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 3511
+  },
+  {
+    "name": "michengai-dsh-agency-agents",
+    "category": "MCP与集成类",
+    "source": "npm:@michengai/dsh-agency-agents",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 3,
+    "review": [
+      "T02 零宽/不可见字符注入",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 12369
+  },
+  {
+    "name": "dsh-codex-oauth",
+    "category": "MCP与集成类",
+    "source": "npm:dsh-codex-oauth",
+    "risk": "review",
+    "filesScanned": 11,
+    "findingsCount": 5,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T06",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 562
+  },
+  {
+    "name": "linxin666-dsh-ssh",
+    "category": "MCP与集成类",
+    "source": "npm:@linxin666/dsh-ssh",
+    "risk": "review",
+    "filesScanned": 60,
+    "findingsCount": 18,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T08 读取会话日志（思维链/对话记录）"
+    ],
+    "notice": [
+      "T02",
+      "T05",
+      "T05",
+      "T06",
+      "T06",
+      "T06",
+      "T06",
+      "T06",
+      "T06",
+      "T06",
+      "T06",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 2016
+  }
+]

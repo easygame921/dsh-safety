@@ -23,7 +23,7 @@
         { "name": "linxin666-dsh-tool-describe-image", "source": "npm:@linxin666/dsh-tool-describe-image" },
         { "name": "dttxorg-deepseekeyes", "source": "npm:@dttxorg/deepseekeyes" },
         { "name": "dsh-vision", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision" },
-        { "name": "crazy-th-dsh-computer-use", "source": "npm:crazy_th/dsh-computer-use" }
+        { "name": "crazy-th-dsh-computer-use", "source": "github:crazy-th/dsh-computer-use" }
       ]
     },
     {
@@ -75,7 +75,7 @@
         { "name": "jkxie-dsh-deep-flow", "source": "npm:@jkxie/dsh-deep-flow" },
         { "name": "deepseek-flow", "source": "npm:deepseek-flow" },
         { "name": "dsh-mini-tui", "source": "npm:dsh-mini-tui" },
-        { "name": "dsh-tui", "source": "npm:deepseek-harness-tui/dsh-tui" },
+        { "name": "dsh-tui", "source": "github:deepseek-harness-tui/dsh-tui" },
         { "name": "cute-dsh-tui", "source": "npm:@heluo0991/cute-dsh-tui" },
         { "name": "yunper-macode", "source": "npm:@yunper/macode" },
         { "name": "pi-dsh-optimizer", "source": "npm:pi-dsh-optimizer" },

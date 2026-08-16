@@ -1,0 +1,237 @@
+[
+  {
+    "name": "dsh-frontend-tools-bridge",
+    "category": "数据存储类",
+    "source": "npm:dsh-frontend-tools-bridge",
+    "risk": "review",
+    "filesScanned": 13,
+    "findingsCount": 3,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 1667
+  },
+  {
+    "name": "dsh-desktop-plugin",
+    "category": "桌面平台类",
+    "source": "npm:dsh-desktop-plugin",
+    "risk": "review",
+    "filesScanned": 17,
+    "findingsCount": 11,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 956
+  },
+  {
+    "name": "dsh-market",
+    "category": "桌面平台类",
+    "source": "npm:dshmarket",
+    "risk": "review",
+    "filesScanned": 61,
+    "findingsCount": 28,
+    "review": [
+      "T03 安装脚本（preinstall/postinstall/prepare）",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 4226
+  },
+  {
+    "name": "dsh-plugin-marketplace",
+    "category": "桌面平台类",
+    "source": "npm:dsh-plugin-marketplace",
+    "risk": "review",
+    "filesScanned": 5,
+    "findingsCount": 4,
+    "review": [
+      "T05 敏感数据外传（网络 + 敏感读取组合）",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 2353
+  },
+  {
+    "name": "create-dsh-plugin",
+    "category": "脚手架开发类",
+    "source": "npm:create-dsh-plugin",
+    "risk": "ok",
+    "filesScanned": 20,
+    "findingsCount": 0,
+    "review": [],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 914
+  },
+  {
+    "name": "hyzyn-dsh-all",
+    "category": "脚手架开发类",
+    "source": "npm:@hyzyn/dsh-all",
+    "risk": "ok",
+    "filesScanned": 4,
+    "findingsCount": 0,
+    "review": [],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 993
+  },
+  {
+    "name": "botscape-bundle",
+    "category": "脚手架开发类",
+    "source": "npm:@botscape/bundle",
+    "risk": "ok",
+    "filesScanned": 2,
+    "findingsCount": 0,
+    "review": [],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 1105
+  },
+  {
+    "name": "dsh-web-open",
+    "category": "脚手架开发类",
+    "source": "npm:dsh-web-open",
+    "risk": "review",
+    "filesScanned": 6,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）",
+      "T10 持久化驻留（写 rc / 计划任务 / 自启）"
+    ],
+    "notice": [],
+    "suppressions": [],
+    "durationMs": 1674
+  },
+  {
+    "name": "a4phone",
+    "category": "远程平台类",
+    "source": "npm:a4phone",
+    "risk": "review",
+    "filesScanned": 24,
+    "findingsCount": 7,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T06",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 2947
+  },
+  {
+    "name": "dsh-codex-connect",
+    "category": "远程平台类",
+    "source": "npm:dsh-codex-connect",
+    "risk": "review",
+    "filesScanned": 12,
+    "findingsCount": 8,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05",
+      "T06",
+      "T06",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 9634
+  },
+  {
+    "name": "open-agfs-dsh-agfs",
+    "category": "远程平台类",
+    "source": "npm:@open-agfs/dsh-agfs",
+    "risk": "review",
+    "filesScanned": 15,
+    "findingsCount": 4,
+    "review": [
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T05",
+      "T05"
+    ],
+    "suppressions": [],
+    "durationMs": 3801
+  },
+  {
+    "name": "dsh-codex-oauth",
+    "category": "远程平台类",
+    "source": "npm:dsh-codex-oauth",
+    "risk": "review",
+    "filesScanned": 11,
+    "findingsCount": 5,
+    "review": [
+      "T06 读取敏感路径内容",
+      "T06 读取敏感路径内容"
+    ],
+    "notice": [
+      "T05",
+      "T06",
+      "T06"
+    ],
+    "suppressions": [],
+    "durationMs": 14902
+  }
+]

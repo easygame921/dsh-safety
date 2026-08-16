@@ -69,6 +69,14 @@ lines.push(`- 成功审计：**${ok.length}** 份；失败：**${failed.length}*
 lines.push(`- 风险分布：OK **${riskCount.ok ?? 0}** 份，REVIEW **${riskCount.review ?? 0}** 份`);
 lines.push(`- REVIEW 率：**${ok.length > 0 ? Math.round(((riskCount.review ?? 0) / ok.length) * 100) : 0}%**（说明：多数"高危"来自插件自身功能面，见误报分析）`);
 lines.push('');
+lines.push(`## 三次复审对比`);
+lines.push('');
+lines.push(`| 轮次 | 样本数 | OK | REVIEW | REVIEW 率 | 说明 |`);
+lines.push(`| --- | --- | --- | --- | --- | --- |`);
+lines.push(`| 第一次（规则 v0.1） | 58 | 6 | 50 | 89% | 规则宽松 + README/测试夹具误报 |`);
+lines.push(`| 第二次（规则 v0.2 优化） | 58 | 20 | 36 | 64% | excludeDocs + 规则收紧 + 白名单 |`);
+lines.push(`| **本次（复审，样本 68）** | ${all.length} | ${riskCount.ok ?? 0} | ${riskCount.review ?? 0} | **${ok.length > 0 ? Math.round(((riskCount.review ?? 0) / ok.length) * 100) : 0}%** | 扩样本 + 稳定验证 |`);
+lines.push('');
 lines.push(`## 分类统计`);
 lines.push('');
 lines.push('| 类别 | 样本数 | OK | REVIEW | 失败 |');
@@ -121,7 +129,7 @@ const failedRows = failed.map((r) => `- ${r.name}（${r.category}）：${r.error
 lines.push(failedRows);
 lines.push('');
 
-const reportName = `2026-08-16_社区插件批量审计.md`;
+const reportName = process.argv[4] ?? `2026-08-16_社区插件批量审计_v2.md`;
 writeFileSync(join(outDir, reportName), lines.join('\n'), 'utf8');
 console.log(`report written: ${join(outDir, reportName)}`);
 console.log(`summary: ${ok.length} ok / ${failed.length} failed, REVIEW=${riskCount.review ?? 0}`);
