@@ -122,6 +122,8 @@ export interface AuditReport {
   findingsCount: number;
   findings: Finding[];
   profile: PermissionProfile;
+  /** 白名单抑制/降级记录（如有） */
+  suppressions?: AllowlistSuppression[];
   /** 只读契约：审计绝不写被审计对象 */
   writesPerformed: false;
   /** 扫描耗时 ms */
@@ -141,6 +143,46 @@ export interface ScanOptions {
   maxFiles?: number;
   /** 单文件最大字节（默认 256KB） */
   maxFileBytes?: number;
+  /** 白名单配置（注入；缺省用内置默认白名单） */
+  allowlist?: AllowlistConfig;
+  /** 是否加载内置默认白名单（默认 true） */
+  useDefaultAllowlist?: boolean;
+}
+
+// ── 白名单（Allowlist）────────────────────────────────────────────────────
+
+/**
+ * 白名单条目：命中则跳过或降级对应规则产出，用于抑制"正常插件也会触发"的
+ * 已知误报。匹配维度：插件名 / 文件路径 / 外联主机，与 规则id/威胁编号 组合。
+ */
+export interface AllowlistEntry {
+  /** 规则 id（如 T03-001）或威胁编号（如 T03）或 '*'（全部） */
+  ruleId: string;
+  /** 插件名/来源匹配（正则 source，大小写不敏感；缺省 = 任意插件） */
+  plugin?: string;
+  /** 文件相对路径匹配（正则 source；作用于发现的 evidence.file） */
+  path?: string;
+  /** 外联主机匹配（正则 source；作用于证据片段/外联主机表） */
+  host?: string;
+  /** 命中行为：skip=移除发现；downgrade=降级为 info（默认 downgrade） */
+  action?: 'skip' | 'downgrade';
+  /** 中文理由（报告展示） */
+  reason?: string;
+}
+
+/** 白名单配置 */
+export interface AllowlistConfig {
+  version: string;
+  entries: AllowlistEntry[];
+}
+
+/** 被白名单抑制/降级的记录（报告展示） */
+export interface AllowlistSuppression {
+  ruleId: RuleId;
+  threatId: ThreatId;
+  action: 'skip' | 'downgrade';
+  matchedEntry: string;
+  reason?: string;
 }
 
 /** MCP 工具返回的 JSON 摘要（DESIGN.md §4） */

@@ -73,6 +73,14 @@ export function renderMarkdown(report: AuditReport): string {
     }
   }
   lines.push('');
+  if (report.suppressions && report.suppressions.length > 0) {
+    lines.push('### 白名单抑制');
+    lines.push('');
+    for (const s of report.suppressions) {
+      lines.push(`- ${s.ruleId}（${s.threatId}）→ ${s.action === 'skip' ? '跳过' : '降级为 info'}：${s.reason ?? ''}`);
+    }
+    lines.push('');
+  }
   lines.push('> 审计是辅助，不是裁决——请基于证据自行判断。');
   return lines.join('\n');
 }

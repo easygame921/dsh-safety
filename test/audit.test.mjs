@@ -84,3 +84,78 @@ test('contract: audit report is read-only and well-formed', async () => {
   assert.ok(typeof r.durationMs === 'number');
   assert.ok(typeof r.scannedAt === 'string');
 });
+
+// ---------------------------------------------------------------- P1 (T07-T11)
+test('T07 prompt-inject: hidden instruction detected', async () => {
+  const r = await auditFixture('malicious/prompt-inject');
+  assert.ok(threatIds(r).has('T07'), `expected T07 finding, got: ${[...threatIds(r)]}`);
+});
+
+test('T08 session-hijack: session log read detected', async () => {
+  const r = await auditFixture('malicious/session-hijack');
+  assert.ok(threatIds(r).has('T08'), `expected T08 finding, got: ${[...threatIds(r)]}`);
+});
+
+test('T09 client-phish: fake dialog + keylog detected', async () => {
+  const r = await auditFixture('malicious/client-phish');
+  assert.ok(threatIds(r).has('T09'), `expected T09 finding, got: ${[...threatIds(r)]}`);
+});
+
+test('T10 persistence: rc/scheduled-task write detected', async () => {
+  const r = await auditFixture('malicious/persistence');
+  assert.ok(threatIds(r).has('T10'), `expected T10 finding, got: ${[...threatIds(r)]}`);
+});
+
+test('T11 dns-exfil: dns + sensitive read detected', async () => {
+  const r = await auditFixture('malicious/dns-exfil');
+  assert.ok(threatIds(r).has('T11'), `expected T11 finding, got: ${[...threatIds(r)]}`);
+});
+
+// ---------------------------------------------------------------- allowlist
+test('allowlist: downgrade suppresses review severity but keeps evidence', async () => {
+  const root = join(fixtures, 'malicious/install-script');
+  // install-script 插件名为 install-script，白名单把它的 T03 降级
+  const r = await scan(
+    {
+      root,
+      sourceLabel: 'install-script',
+      allowlist: { version: '0.1.0', entries: [{ ruleId: 'T03', plugin: 'install-script', action: 'downgrade', reason: 'test' }] },
+      useDefaultAllowlist: false,
+    },
+    v1Rules,
+  );
+  const t03 = r.findings.filter((f) => f.threatId === 'T03');
+  assert.ok(t03.length > 0, 'downgraded finding should remain with evidence');
+  assert.ok(t03.every((f) => f.severity === 'info'), 'downgraded severity must be info');
+  assert.equal(r.risk, 'ok', 'no review findings => risk ok');
+  assert.ok(r.suppressions && r.suppressions.length > 0, 'suppressions must be recorded');
+});
+
+test('allowlist: skip removes the finding entirely', async () => {
+  const root = join(fixtures, 'malicious/install-script');
+  const r = await scan(
+    {
+      root,
+      sourceLabel: 'install-script',
+      allowlist: { version: '0.1.0', entries: [{ ruleId: 'T03', plugin: 'install-script', action: 'skip', reason: 'test' }] },
+      useDefaultAllowlist: false,
+    },
+    v1Rules,
+  );
+  assert.ok(!threatIds(r).has('T03'), 'skipped rule must not appear');
+  const sup = r.suppressions ?? [];
+  assert.ok(sup.some((s) => s.ruleId.startsWith('T03') && s.action === 'skip'), 'skip suppression recorded');
+});
+
+test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', async () => {
+  // 用真实 harness-pet 目录（存在则扫；不存在则跳过）
+  const real = 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet';
+  const { access } = await import('node:fs/promises');
+  let exists = true;
+  try { await access(real); } catch { exists = false; }
+  if (!exists) { t.skip?.(); return; }
+  const r = await scan({ root: real, sourceLabel: 'harness-pet' }, v1Rules);
+  const t03 = r.findings.filter((f) => f.threatId === 'T03');
+  // 默认白名单将 harness-pet 的 T03 降级为 info
+  assert.ok(t03.every((f) => f.severity === 'info'), 'harness-pet T03 should be downgraded by default allowlist');
+});

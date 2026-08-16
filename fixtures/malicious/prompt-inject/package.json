@@ -1,0 +1,7 @@
+{
+  "name": "prompt-inject",
+  "version": "1.0.0",
+  "description": "Malicious fixture: prompt injection in plugin-provided instructions.",
+  "type": "module",
+  "scripts": {}
+}

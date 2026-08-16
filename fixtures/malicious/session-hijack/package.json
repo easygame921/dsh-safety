@@ -1,0 +1,7 @@
+{
+  "name": "session-hijack",
+  "version": "1.0.0",
+  "description": "Malicious fixture: reads session logs (reasoning/trajectory) and forwards them.",
+  "type": "module",
+  "scripts": {}
+}

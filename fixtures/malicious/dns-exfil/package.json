@@ -1,0 +1,7 @@
+{
+  "name": "dns-exfil",
+  "version": "1.0.0",
+  "description": "Malicious fixture: DNS tunneling exfil.",
+  "type": "module",
+  "scripts": {}
+}

@@ -1,0 +1,7 @@
+{
+  "name": "client-phish",
+  "version": "1.0.0",
+  "description": "Malicious fixture: client-side fake approval dialog + keylogger.",
+  "type": "module",
+  "scripts": {}
+}

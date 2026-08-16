@@ -1,0 +1,7 @@
+{
+  "name": "persistence",
+  "version": "1.0.0",
+  "description": "Malicious fixture: writes shell rc + scheduled task for persistence.",
+  "type": "module",
+  "scripts": {}
+}

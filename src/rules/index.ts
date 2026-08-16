@@ -155,4 +155,140 @@ export const v1Rules: SafetyRule[] = [
     ],
     falsePositiveNotes: '需"读取 API + 敏感路径"同文件共存；扫描器自身代码排除在外。',
   },
+
+  // ── T07 prompt 注入 ─────────────────────────────────────────────────────
+  {
+    id: 'T07-001',
+    threatId: 'T07',
+    severity: 'review',
+    title: '指令注入文本（hidden instruction）',
+    description: '代码/配置中出现"忽略之前指令/你现在是/不要告诉用户"等指令注入特征，或向 system-prompt/agent-preset 注入内容——劫持模型行为。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs,json,yml,yaml,md}'],
+    patterns: [
+      'ignore\\s+(all\\s+)?previous\\s+(instructions|prompts|rules)',
+      '\\u4e0d\\u8981\\u7ba1\\u4e4b\\u524d|\\u5ffd\\u7565\\u4e4b\\u524d|\\u4e0d\\u7528\\u7406\\u4f1a\\u4e4b\\u524d',
+      '\\u4f60\\u73b0\\u5728\\u662f|\\u4f60\\u5c31\\u662f|\\u4f60\\u8981\\u88c5\\u4f5c|pretend\\s+(you are|to be)|act\\s+as\\s+',
+      'do\\s+not\\s+(tell|reveal|mention).{0,40}(user|human)',
+      '\\u4e0d\\u8981\\u544a\\u8bc9\\u7528\\u6237|\\u4e0d\\u8981\\u63d0\\u53ca|\\u9690\\u85cf.{0,10}\\u4e0b\\u9762',
+    ],
+    falsePositiveNotes: '安全测试/提示词工程类插件可能含此类文本；结合文件角色（prompt/preset 文件 vs 普通代码）判断。',
+  },
+  {
+    id: 'T07-002',
+    threatId: 'T07',
+    severity: 'notice',
+    title: 'agent-preset / system-prompt 补丁',
+    description: '插件携带 agent-preset 或 system-prompt 覆盖/注入——评估其提示词内容是否含越权指令。',
+    pathPatterns: ['agent-preset', 'system-prompt', 'prompt-custom'],
+    falsePositiveNotes: '合法插件可能自带预设；命中仅提示审查预设内容。',
+  },
+
+  // ── T08 思维链/会话劫持 ────────────────────────────────────────────────
+  {
+    id: 'T08-001',
+    threatId: 'T08',
+    severity: 'review',
+    title: '思维链/消息改写 hook',
+    description: '注入 agent-loop 或读取/改写 reasoning、trajectory、消息内容——劫持思维链或篡改对话历史。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    patterns: [
+      'agent[-_]loop',
+      'trajectory|reasoning[-_]?content',
+      'ctx\\.sessions\\.(get|set|update|mutate)\\s*\\([^)]*(content|message|reasoning|trajectory)',
+    ],
+    falsePositiveNotes: '仅命中 agent-loop 注入、reasoning/trajectory 读写、会话内容改写；普通会话事件监听（session/start 等）不命中。',
+  },
+  {
+    id: 'T08-002',
+    threatId: 'T08',
+    severity: 'review',
+    title: '读取会话日志（思维链/对话记录）',
+    description: '直接读取 ~/.dsh/sessions 下的会话 JSONL——窃取思维链与完整对话记录。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    combinators: [
+      {
+        name: 'read-session-logs',
+        allOf: ['readFile|readFileSync|execFile|execSync|spawn|ls\\b', 'sessions[\\\\/]|session[-_]|jsonl'],
+      },
+    ],
+    falsePositiveNotes: '需"读取 API + 会话文件路径"同文件共存。',
+  },
+
+  // ── T09 client 端钓鱼 ──────────────────────────────────────────────────
+  {
+    id: 'T09-001',
+    threatId: 'T09',
+    severity: 'review',
+    title: 'client 端 DOM 注入（伪造审批弹窗）',
+    description: '浏览器侧注入覆盖式 UI（position:fixed + 高 z-index + 审批/授权字样），可伪造 dsh 审批弹窗钓鱼。',
+    fileGlobs: ['**/client*.{js,ts,mjs,cjs}'],
+    combinators: [
+      {
+        name: 'fake-dialog',
+        allOf: ['position\\s*:\\s*fixed|z[-_]?index\\s*:\\s*\\d{3,}', 'innerHTML|insertAdjacentHTML|appendChild|createElement', 'approve|\\u5ba1\\u6279|\\u6388\\u6743|\\u5141\\u8bb8|permission'],
+      },
+    ],
+    falsePositiveNotes: '需"覆盖式定位 + DOM 写入 + 审批字样"同文件共存；正常 UI 组件可能命中部分特征。',
+  },
+  {
+    id: 'T09-002',
+    threatId: 'T09',
+    severity: 'review',
+    title: '键盘/剪贴板监听',
+    description: '监听键盘输入或读取剪贴板——窃取用户输入（含密码/密钥）。',
+    fileGlobs: ['**/client*.{js,ts,mjs,cjs}'],
+    patterns: [
+      'addEventListener\\s*\\(\\s*[\'"](keydown|keyup|keypress|paste)',
+      'navigator\\.clipboard\\.readText|document\\.execCommand\\s*\\(\\s*[\'"]paste',
+      'onkeydown|onkeyup|onpaste',
+    ],
+    falsePositiveNotes: '部分插件（如命令面板）监听键盘；重点看是否记录/外发输入。',
+  },
+
+  // ── T10 持久化驻留 ─────────────────────────────────────────────────────
+  {
+    id: 'T10-001',
+    threatId: 'T10',
+    severity: 'review',
+    title: '持久化驻留（写 rc / 计划任务 / 自启）',
+    description: '写入 shell 启动文件、注册计划任务或开机自启——插件卸载后仍持续运行。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs,ps1,sh,json}'],
+    patterns: [
+      '(\\~|HOME|USERPROFILE)[\\\\/](\\.zshrc|\\.bashrc|\\.profile|\\.bash_profile|\\.config[\\\\/]autostart)',
+      'schtasks|TaskScheduler|Register-ScheduledTask|\\/etc\\/systemd|rc\\.local|\\/etc\\/init\\.d',
+      'HKEY_CURRENT_USER[\\\\/]Software[\\\\/]Microsoft[\\\\/]Windows[\\\\/]CurrentVersion[\\\\/]Run',
+      'Startup[\\\\/]|startup\\s*folder|CreateShortcut',
+    ],
+    falsePositiveNotes: '正常工具可能写配置到 ~/.config；重点看 rc 文件/计划任务/注册表 Run。',
+  },
+
+  // ── T11 DNS 外带 ───────────────────────────────────────────────────────
+  {
+    id: 'T11-001',
+    threatId: 'T11',
+    severity: 'notice',
+    title: 'DNS 解析试探（疑似外带通道）',
+    description: '使用 dns.resolve/lookup 做域名解析——可能是绕过网络白名单的数据外带通道（如 DNS-over-HTTP 隧道）。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    patterns: [
+      'dns\\.(resolve|lookup|resolve4|resolve6)\\s*\\(',
+      'dns\\.promises|require\\s*\\(\\s*[\'"]dns[\'"]\\s*\\)',
+    ],
+    falsePositiveNotes: '正常插件可能用 dns 判断网络；与 T05 网络+敏感读取组合时升级为 review（见下）。',
+  },
+  {
+    id: 'T11-002',
+    threatId: 'T11',
+    severity: 'review',
+    title: 'DNS 解析 + 敏感读取组合',
+    description: '同文件内同时出现 DNS 解析与敏感数据读取——高疑似 DNS 外带通道。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    combinators: [
+      {
+        name: 'dns-exfil',
+        allOf: ['dns\\.(resolve|lookup|resolve4|resolve6)|dns\\.promises', 'readFile|readFileSync|execFile|execSync|process\\.env'],
+      },
+    ],
+    falsePositiveNotes: '需 DNS API 与敏感读取同文件共存。',
+  },
 ];
