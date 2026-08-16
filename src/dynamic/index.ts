@@ -46,6 +46,12 @@ export function renderDynamicSummary(report: DynamicReport): string {
         case 'env':
           lines.push(`- 🔑 读取环境变量：${t.key}`);
           break;
+        case 'timer':
+          lines.push(`- ⏱️ 定时器：${t.kind}（延迟 ${t.delay}ms，已加速立即执行）`);
+          break;
+        case 'tool':
+          lines.push(`- 🛠️ 工具调用模拟：${t.name}`);
+          break;
         default:
           lines.push(`- ${t.type}: ${JSON.stringify(t).slice(0, 120)}`);
       }
