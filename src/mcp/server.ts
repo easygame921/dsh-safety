@@ -22,14 +22,22 @@ export function createServer(): McpServer {
     dynamic?: DynamicReport;
   }
 
-  async function doAudit(source: string, ruleIds: string[] | undefined, dynamic: boolean | undefined): Promise<AuditResult> {
+  interface AuditOptions {
+    ruleIds?: string[];
+    dynamic?: boolean;
+    /** 风险为 review 时自动附带动态沙箱（避免每次等待依赖安装，REVIEW 场景动态佐证） */
+    dynamicOnReview?: boolean;
+  }
+
+  async function doAudit(source: string, opts: AuditOptions = {}): Promise<AuditResult> {
     const { root, workDir, cleanup } = await prepareSource(source);
     try {
-      const rules = ruleIds && ruleIds.length > 0
-        ? v1Rules.filter((r) => ruleIds.includes(r.id))
+      const rules = opts.ruleIds && opts.ruleIds.length > 0
+        ? v1Rules.filter((r) => opts.ruleIds!.includes(r.id))
         : v1Rules;
       const report = await scan({ root, sourceLabel: source }, rules);
-      const dynamicReport = dynamic ? await runDynamic(root, { timeoutMs: 25000 }) : undefined;
+      const wantDynamic = opts.dynamic === true || (opts.dynamicOnReview === true && report.risk === 'review');
+      const dynamicReport = wantDynamic ? await runDynamic(root, { timeoutMs: 25000 }) : undefined;
       return { report, dynamic: dynamicReport };
     } finally {
       await cleanup();
@@ -51,29 +59,31 @@ export function createServer(): McpServer {
   server.registerTool(
     'audit_plugin',
     {
-      description: '审计一个 DSH 插件来源（npm 包名 / github:owner/repo / 本地目录路径），返回完整报告 + 大白话总结；dynamic=true 时附加沙箱动态行为轨迹。',
+      description: '审计一个 DSH 插件来源（npm 包名 / github:owner/repo / 本地目录路径），返回完整报告 + 大白话总结；dynamic=true 强制动态，dynamicOnReview=true 在风险为 review 时自动动态。',
       inputSchema: {
         source: z.string().describe('npm 包名、github:owner/repo 或本地绝对路径'),
         ruleIds: z.array(z.string()).optional().describe('可选：只跑指定规则 id'),
         dynamic: z.boolean().optional().describe('可选：true 时在受限沙箱中试运行插件 host 端，输出动态行为轨迹'),
+        dynamicOnReview: z.boolean().optional().describe('可选：true 时仅在静态风险为 review 时自动附加动态沙箱'),
       },
     },
-    async ({ source, ruleIds, dynamic }) => ({
-      content: auditContent(await doAudit(source, ruleIds, dynamic)),
+    async ({ source, ruleIds, dynamic, dynamicOnReview }) => ({
+      content: auditContent(await doAudit(source, { ruleIds, dynamic, dynamicOnReview })),
     }),
   );
 
   server.registerTool(
     'audit_url',
     {
-      description: '从插件 URL（GitHub 仓库页 / npm 包页）审计 DSH 插件，返回 Markdown 安全报告；dynamic=true 时附加动态轨迹。',
+      description: '从插件 URL（GitHub 仓库页 / npm 包页）审计 DSH 插件，返回 Markdown 安全报告；dynamic=true 强制动态，dynamicOnReview=true 在 review 时自动动态。',
       inputSchema: {
         url: z.string().describe('GitHub 仓库 URL 或 npm 包页 URL'),
         ruleIds: z.array(z.string()).optional(),
         dynamic: z.boolean().optional(),
+        dynamicOnReview: z.boolean().optional(),
       },
     },
-    async ({ url, ruleIds, dynamic }) => {
+    async ({ url, ruleIds, dynamic, dynamicOnReview }) => {
       let source: string;
       const gh = url.match(/github\.com\/([^/]+\/[^/]+)/);
       if (gh && gh[1]) {
@@ -82,7 +92,7 @@ export function createServer(): McpServer {
         const npm = url.match(/npmjs\.com\/package\/(.+)/);
         source = npm && npm[1] ? 'npm:' + npm[1] : url;
       }
-      return { content: auditContent(await doAudit(source, ruleIds, dynamic)) };
+      return { content: auditContent(await doAudit(source, { ruleIds, dynamic, dynamicOnReview })) };
     },
   );
 
