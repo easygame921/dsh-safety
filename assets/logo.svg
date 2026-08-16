@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1220"/>
+      <stop offset="100%" stop-color="#0d1b2e"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="check" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 深蓝背景 -->
+  <rect x="0" y="0" width="400" height="400" rx="72" fill="url(#bg)"/>
+
+  <!-- 数据粒子（背景装饰） -->
+  <circle cx="52" cy="60" r="3" fill="#22d3ee" opacity="0.5"/>
+  <circle cx="340" cy="84" r="2" fill="#22d3ee" opacity="0.4"/>
+  <circle cx="72" cy="330" r="2.5" fill="#22d3ee" opacity="0.4"/>
+  <circle cx="328" cy="318" r="3" fill="#22d3ee" opacity="0.5"/>
+  <circle cx="200" cy="46" r="2" fill="#22d3ee" opacity="0.6"/>
+  <circle cx="200" cy="356" r="2.5" fill="#22d3ee" opacity="0.5"/>
+
+  <!-- 盾牌轮廓（青色） -->
+  <path d="M200 78 L296 108 V204 C296 268 256 318 200 338 C144 318 104 268 104 204 V108 Z"
+        fill="rgba(34,211,238,0.08)" stroke="url(#shield)" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- 扫描网格（盾牌内） -->
+  <g stroke="#22d3ee" stroke-width="1" opacity="0.25">
+    <line x1="128" y1="160" x2="272" y2="160"/>
+    <line x1="128" y1="196" x2="272" y2="196"/>
+    <line x1="128" y1="232" x2="272" y2="232"/>
+    <line x1="152" y1="136" x2="152" y2="268"/>
+    <line x1="200" y1="126" x2="200" y2="286"/>
+    <line x1="248" y1="136" x2="248" y2="268"/>
+  </g>
+
+  <!-- 扫描线（青色高亮） -->
+  <line x1="128" y1="210" x2="272" y2="210" stroke="#22d3ee" stroke-width="2.5" opacity="0.7"/>
+
+  <!-- 对勾（绿色，通过） -->
+  <path d="M158 218 L192 252 L246 184" fill="none" stroke="url(#check)" stroke-width="12"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 底部代码行装饰 -->
+  <g fill="#22d3ee" opacity="0.5">
+    <rect x="128" y="360" width="40" height="4" rx="2"/>
+    <rect x="180" y="360" width="24" height="4" rx="2"/>
+    <rect x="216" y="360" width="56" height="4" rx="2"/>
+  </g>
+</svg>

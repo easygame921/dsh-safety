@@ -1,5 +1,15 @@
 # dsh-safety
 
+<p align="center">
+  <img src="assets/logo.svg" alt="dsh-safety logo" width="160"/>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="license"/></a>
+  <a href="https://github.com/easygame921/dsh-safety/actions"><img src="https://img.shields.io/github/actions/workflow/status/easygame921/dsh-safety/ci.yml" alt="CI"/></a>
+  <a href="https://github.com/easygame921/dsh-safety/releases"><img src="https://img.shields.io/github/v/tag/easygame921/dsh-safety" alt="version"/></a>
+</p>
+
 对社区开源的 **DeepSeek Harness（DSH）插件**做安装前安全审计的 MCP 服务器。
 
 > ✅ 状态：**M0-M3 已完成**（规则库 v1 + 轻量 AST + 扫描引擎 + MCP + 动态沙箱），详见 [DESIGN.md](./DESIGN.md)
