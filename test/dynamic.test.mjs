@@ -12,7 +12,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixtures = join(here, '..', 'fixtures');
 
 test('dynamic: malicious exfil fixture triggers fs-read-sensitive surface', async () => {
-  const r = await runDynamic(join(fixtures, 'malicious', 'exfil'), { timeoutMs: 15000 });
+  const r = await runDynamic(join(fixtures, 'malicious', 'exfil'), { timeoutMs: 15000, installDeps: false });
   assert.equal(r.status, 'completed', `status: ${r.status} ${r.errors.join('; ')}`);
   assert.ok(r.riskSurfaces.includes('fs-read-sensitive'), `surfaces: ${r.riskSurfaces.join(',')}`);
   assert.ok(
@@ -22,7 +22,7 @@ test('dynamic: malicious exfil fixture triggers fs-read-sensitive surface', asyn
 });
 
 test('dynamic: benign ok-plugin runs clean', async () => {
-  const r = await runDynamic(join(fixtures, 'benign', 'ok-plugin'), { timeoutMs: 15000 });
+  const r = await runDynamic(join(fixtures, 'benign', 'ok-plugin'), { timeoutMs: 15000, installDeps: false });
   assert.equal(r.status, 'completed', `status: ${r.status} ${r.errors.join('; ')}`);
   assert.ok(!r.riskSurfaces.includes('fs-read-sensitive'), 'benign must not read sensitive paths');
   assert.ok(!r.riskSurfaces.includes('network'), 'benign must not touch network');
@@ -31,7 +31,7 @@ test('dynamic: benign ok-plugin runs clean', async () => {
 
 test('dynamic: unknown/loadable plugin reports status without crashing runner', async () => {
   // 不存在目录 → spawn-failed 或 crashed，主进程不崩
-  const r = await runDynamic(join(fixtures, 'malicious', 'does-not-exist'), { timeoutMs: 10000 });
+  const r = await runDynamic(join(fixtures, 'malicious', 'does-not-exist'), { timeoutMs: 10000, installDeps: false });
   assert.ok(['crashed', 'spawn-failed', 'load-failed'].includes(r.status), `status: ${r.status}`);
   assert.ok(r.durationMs >= 0);
 });

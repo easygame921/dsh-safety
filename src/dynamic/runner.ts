@@ -72,8 +72,10 @@ export async function runDynamic(
     errors: [],
     riskSurfaces: [],
   };
-  // 前置：装依赖（--ignore-scripts 安全），失败不阻断（无依赖插件也能跑）
-  if (opts.installDeps !== false) {
+  // 前置：装依赖（--ignore-scripts 安全），失败不阻断（无依赖插件也能跑）。
+  // 注意：仅对"远程下载的临时目录"启用（由调用方判断来源后传 true）——对本地源码目录
+  // 安装会污染插件目录（生成 package-lock / 触发 npm 清理），因此默认 false。
+  if (opts.installDeps === true) {
     const inst = await installDeps(pluginRoot, { timeoutMs: timeoutMs + 60000 });
     if (!inst.ok) base.errors.push(inst.message);
   }

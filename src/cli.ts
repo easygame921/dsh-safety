@@ -3,7 +3,7 @@
  */
 import { scan, renderMarkdown, renderPlainSummary } from './scanner/index.js';
 import { v1Rules } from './rules/index.js';
-import { prepareSource } from './resolve/source.js';
+import { prepareSource, parseSource } from './resolve/source.js';
 import { createServer } from './mcp/server.js';
 import { runDynamic, renderDynamicSummary } from './dynamic/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -84,7 +84,9 @@ async function main(): Promise<void> {
     try {
       const { root, workDir, cleanup } = await prepareSource(source);
       try {
-        const report = await runDynamic(root);
+        // 远程来源（npm/github）才装依赖到临时目录；本地源码不装（避免污染用户插件目录）
+        const spec = parseSource(source);
+        const report = await runDynamic(root, { installDeps: spec.kind !== 'local' });
         process.stdout.write(renderDynamicSummary(report) + '\n');
         process.stdout.write('\n--- 原始轨迹 ---\n' + JSON.stringify(report.traces, null, 2) + '\n');
       } finally {

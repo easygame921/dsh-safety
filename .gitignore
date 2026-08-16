@@ -31,3 +31,6 @@ Thumbs.db
 *.orig
 *.bak
 *.bak-*
+
+# npm 产物（夹具目录内）
+fixtures/**/package-lock.json
