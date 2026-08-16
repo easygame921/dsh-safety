@@ -111,6 +111,19 @@ test('T11 dns-exfil: dns + sensitive read detected', async () => {
   assert.ok(threatIds(r).has('T11'), `expected T11 finding, got: ${[...threatIds(r)]}`);
 });
 
+// ---------------------------------------------------------------- adversarial (漏报对抗)
+test('adversarial stealth-exfil: variable-split path still caught (T06 combinator)', async () => {
+  const r = await auditFixture('malicious/stealth-exfil');
+  assert.ok(threatIds(r).has('T06'), `stealth-exfil must be caught by T06, got: ${[...threatIds(r)]}`);
+  const t06 = r.findings.filter((f) => f.threatId === 'T06');
+  assert.ok(t06.some((f) => f.severity === 'review'), 'T06-002 (read sensitive content) must be review');
+});
+
+test('adversarial split-payload: chunked base64 + eval caught (T02)', async () => {
+  const r = await auditFixture('malicious/split-payload');
+  assert.ok(threatIds(r).has('T02'), `split-payload must be caught by T02, got: ${[...threatIds(r)]}`);
+});
+
 // ---------------------------------------------------------------- allowlist
 test('allowlist: downgrade suppresses review severity but keeps evidence', async () => {
   const root = join(fixtures, 'malicious/install-script');

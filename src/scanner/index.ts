@@ -19,10 +19,12 @@ export const RULE_SET_VERSION = '0.1.0';
 export async function scan(options: ScanOptions, rules: SafetyRule[]): Promise<AuditReport> {
   const started = Date.now();
   const excludeTests = options.excludeTests ?? true;
+  const excludeDocs = options.excludeDocs ?? true;
   const files = await discoverFiles(options.root, {
     maxFiles: options.maxFiles,
     maxFileBytes: options.maxFileBytes,
     excludeDirNames: excludeTests ? TEST_EXCLUDE_DIRS : [],
+    excludeExts: excludeDocs ? ['.md', '.mdx'] : [],
   });
   const activeRules = options.ruleIds && options.ruleIds.length > 0
     ? rules.filter((r) => options.ruleIds!.includes(r.id))

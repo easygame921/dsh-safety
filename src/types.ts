@@ -149,6 +149,8 @@ export interface ScanOptions {
   useDefaultAllowlist?: boolean;
   /** 是否排除测试/夹具目录（tests/spec/fixtures 等，默认 true——那里常含显式恶意样本，非插件真实行为） */
   excludeTests?: boolean;
+  /** 是否排除文档文件（*.md/*.mdx，默认 true——README 常描述危险模式导致误报） */
+  excludeDocs?: boolean;
 }
 
 // ── 白名单（Allowlist）────────────────────────────────────────────────────

@@ -1,0 +1,7 @@
+{
+  "name": "stealth-exfil",
+  "version": "1.0.0",
+  "description": "Malicious fixture: exfil with path split into variables to evade naive single-line matching.",
+  "type": "module",
+  "scripts": {}
+}

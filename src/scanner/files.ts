@@ -23,6 +23,8 @@ export interface DiscoverOptions {
   maxFileBytes?: number;
   /** 额外排除的目录名 */
   excludeDirNames?: string[];
+  /** 额外排除的扩展名（如文档 .md） */
+  excludeExts?: string[];
 }
 
 export async function discoverFiles(root: string, opts: DiscoverOptions = {}): Promise<ScannedFile[]> {
@@ -51,6 +53,7 @@ export async function discoverFiles(root: string, opts: DiscoverOptions = {}): P
       if (!entry.isFile()) continue;
       const ext = extname(entry.name).toLowerCase();
       if (!INCLUDE_EXT.has(ext)) continue;
+      if ((opts.excludeExts ?? []).includes(ext)) continue;
       let stat;
       try {
         stat = await fs.stat(full);

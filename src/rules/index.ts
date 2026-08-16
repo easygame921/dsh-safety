@@ -22,10 +22,11 @@ export const v1Rules: SafetyRule[] = [
     id: 'T01-002',
     threatId: 'T01',
     severity: 'review',
-    title: '内嵌 patch 文本禁用安全插件',
-    description: '源码中内嵌了禁用安全插件的 patch 文本（如 disabled: true 配合 approval/sandbox/permission），与 cordis 装配层同等的降级风险。',
-    patterns: ['disabled\\s*:\\s*true\\s*[\\s\\S]{0,120}(approval|sandbox|permission)', 'approval|sandbox|permission.{0,120}disabled\\s*:\\s*true'],
-    falsePositiveNotes: '需要 disabled 与安全插件 id 同时出现；隔离的注释/文档不命中（无 disabled: true 结构）。',
+    title: '源码内嵌 patch 禁用安全插件',
+    description: '源码（js/ts）中构建了禁用安全插件的 patch 文本（disabled: true 配合 approval/sandbox/permission 等精确 id），与 cordis 装配层同等的降级风险。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    patterns: ['disabled\\s*:\\s*true[\\s\\S]{0,120}\\b(approval|sandbox|permission|fs-observation-policy)\\b', '\\b(approval|sandbox|permission|fs-observation-policy)\\b[\\s\\S]{0,120}disabled\\s*:\\s*true'],
+    falsePositiveNotes: '仅限 js/ts 源码（文档/配置由 T01-001 的 patch 解析覆盖）；要求 disabled: true 与安全插件精确 id 词边界同时出现。',
   },
 
   // ── T02 隐藏 prompt / 反静态检测混淆 ───────────────────────────────────
@@ -47,7 +48,13 @@ export const v1Rules: SafetyRule[] = [
     description: 'eval/new Function 接收 base64 或超长拼接串，可能是混淆后的恶意代码（本样本即 base64 载荷 + eval 模式）。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     patterns: ['eval\\s*\\([^)]{0,20}(Buffer|atob|fromCharCode)', 'new Function\\s*\\([^)]{0,40}["\'`]', 'eval\\s*\\(\\s*[`"\'][A-Za-z0-9+/=]{60,}'],
-    falsePositiveNotes: 'minify 产物可能误报；结合 T02-003 熵检测交叉判断。',
+    combinators: [
+      {
+        name: 'eval-var-encoded',
+        allOf: ['eval\\s*\\(\\s*[a-zA-Z_$][\\w$]*\\s*\\)', 'Buffer\\.from|atob|fromCharCode'],
+      },
+    ],
+    falsePositiveNotes: 'minify 产物可能误报；"变量间接 eval + base64 解码"组合用于抓分片载荷（对抗性样本）。',
   },
   {
     id: 'T02-003',
@@ -105,14 +112,14 @@ export const v1Rules: SafetyRule[] = [
     threatId: 'T05',
     severity: 'review',
     title: '敏感数据外传（网络 + 敏感读取组合）',
-    description: '同一文件同时出现网络调用与敏感数据读取（fs 读文件 / child_process 输出 / 凭据路径），构成数据外带模式。',
+    description: '同一文件同时出现网络调用与敏感数据读取（读取对象含凭据/密钥/会话等敏感词，或执行进程并取输出），构成数据外带模式。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     combinators: [
       {
         name: 'network+sensitive-read',
         allOf: [
           'fetch\\s*\\(|https?\\.[a-z]+\\s*\\(|WebSocket|axios|request\\s*\\(',
-          'readFile|readFileSync|execFile|execSync|spawn|exec\\s*\\(',
+          'readFile[^\\n]{0,120}(credential|id_rsa|\\.ssh|\\.npmrc|\\.env|secret|token|key|session)|execFile|execSync|spawn\\s*\\(',
         ],
       },
     ],
@@ -133,12 +140,13 @@ export const v1Rules: SafetyRule[] = [
   {
     id: 'T06-001',
     threatId: 'T06',
-    severity: 'review',
+    severity: 'notice',
     title: '引用凭据/敏感路径',
-    description: '代码引用 DSH 凭据文件（.credentials.yaml）、SSH 私钥、.npmrc、.codex、.env 等敏感路径——可能窃取用户密钥与个人信息。',
+    description: '源码引用 DSH 凭据文件（.credentials.yaml）、SSH 私钥、.npmrc、.codex、.env 等敏感路径——提示性发现；只有与读取 API 组合（T06-002）才构成窃取证据。',
+    fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     pathPatterns: ['\\.credentials\\.ya?ml', '\\.ssh|id_rsa|id_ed25519', '\\.npmrc', '\\.codex', '\\.env', '\\.aws[/\\\\]credentials', '\\.kube', '\\.netrc'],
     patterns: ['\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|\\.aws[/\\\\]credentials|\\.netrc'],
-    falsePositiveNotes: '文档/注释中提到这些路径不算读取；与 fs 读取 API 组合时风险更高（T06-002）。',
+    falsePositiveNotes: '仅限源码文件（文档/配置文件不再计入）；引用≠读取，实害由 T06-002 判定。',
   },
   {
     id: 'T06-002',
@@ -203,15 +211,15 @@ export const v1Rules: SafetyRule[] = [
     threatId: 'T08',
     severity: 'review',
     title: '读取会话日志（思维链/对话记录）',
-    description: '直接读取 ~/.dsh/sessions 下的会话 JSONL——窃取思维链与完整对话记录。',
+    description: '直接读取 ~/.dsh 下的会话数据（sessions 目录 / 会话 jsonl）——窃取思维链与完整对话记录。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     combinators: [
       {
         name: 'read-session-logs',
-        allOf: ['readFile|readFileSync|execFile|execSync|spawn|ls\\b', 'sessions[\\\\/]|session[-_]|jsonl'],
+        allOf: ['readFile|readFileSync|execFile|execSync|spawn', '\\.dsh', 'sessions'],
       },
     ],
-    falsePositiveNotes: '需"读取 API + 会话文件路径"同文件共存。',
+    falsePositiveNotes: '需"读取 API + .dsh 路径 + sessions 字样"同文件共存（排除仅提及 session 的普通代码）。',
   },
 
   // ── T09 client 端钓鱼 ──────────────────────────────────────────────────

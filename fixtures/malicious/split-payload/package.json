@@ -1,0 +1,7 @@
+{
+  "name": "split-payload",
+  "version": "1.0.0",
+  "description": "Malicious fixture: base64 payload split across chunks + eval.",
+  "type": "module",
+  "scripts": {}
+}
