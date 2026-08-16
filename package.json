@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "acorn": "^8.18.0",
     "js-yaml": "^4.1.0"
   }
 }

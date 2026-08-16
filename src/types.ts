@@ -47,6 +47,8 @@ export interface SafetyRule {
   pathPatterns?: string[];
   /** 文件级检查：解析 manifest/patch 后调用的断言（见 scanner/manifest.ts） */
   fileChecks?: FileCheckId[];
+  /** AST 级检查：轻量语义增强（见 scanner/ast.ts），与 patterns 为 OR 关系 */
+  astChecks?: AstCheckId[];
   /** 组合规则：多个"子发现"在**同一文件**内都出现才算命中（用于外带/窃取等跨表面威胁） */
   combinators?: CombinatorRule[];
   /** 误报控制说明（报告展示 + 维护者参考） */
@@ -57,6 +59,11 @@ export interface SafetyRule {
 export type FileCheckId =
   | 'pkg-install-scripts' // package.json scripts.preinstall/postinstall/prepare
   | 'patch-disables-security'; // cordis.patch.yml / 内嵌 patch：disabled 安全插件
+
+/** AST 级检查 id（引擎内置实现，轻量语义增强） */
+export type AstCheckId =
+  | 'eval-source' // eval(变量) 且变量初始化来自 base64 解码（Buffer.from/atob）
+  | 'folded-sensitive-path'; // 变量拼接/模板字面量折叠后含敏感路径（对抗拼接绕过）
 
 /** 组合规则：一组子特征在**同一文件**内共存才命中 */
 export interface CombinatorRule {

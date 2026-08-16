@@ -112,16 +112,31 @@ test('T11 dns-exfil: dns + sensitive read detected', async () => {
 });
 
 // ---------------------------------------------------------------- adversarial (漏报对抗)
-test('adversarial stealth-exfil: variable-split path still caught (T06 combinator)', async () => {
+test('adversarial stealth-exfil: keyword split across literals caught via AST fold', async () => {
+  // 敏感词被拆成 '.creden'+'tials.yaml'——正则看不到完整 credential，AST 常量折叠可重组
   const r = await auditFixture('malicious/stealth-exfil');
   assert.ok(threatIds(r).has('T06'), `stealth-exfil must be caught by T06, got: ${[...threatIds(r)]}`);
   const t06 = r.findings.filter((f) => f.threatId === 'T06');
-  assert.ok(t06.some((f) => f.severity === 'review'), 'T06-002 (read sensitive content) must be review');
+  assert.ok(t06.some((f) => f.severity === 'review'), 'T06 must be review via ast:folded-sensitive-path');
+  assert.ok(
+    t06.some((f) => f.evidence.some((e) => e.pattern === 'ast:folded-sensitive-path')),
+    'evidence must come from AST fold',
+  );
 });
 
 test('adversarial split-payload: chunked base64 + eval caught (T02)', async () => {
   const r = await auditFixture('malicious/split-payload');
   assert.ok(threatIds(r).has('T02'), `split-payload must be caught by T02, got: ${[...threatIds(r)]}`);
+});
+
+test('adversarial eval-indirect: eval(variable from Buffer.from decode) caught via AST', async () => {
+  const r = await auditFixture('malicious/eval-indirect');
+  assert.ok(threatIds(r).has('T02'), `eval-indirect must be caught by T02, got: ${[...threatIds(r)]}`);
+  const t02 = r.findings.filter((f) => f.threatId === 'T02');
+  assert.ok(
+    t02.some((f) => f.evidence.some((e) => e.pattern === 'ast:eval-source')),
+    'evidence must come from AST eval-source',
+  );
 });
 
 // ---------------------------------------------------------------- allowlist

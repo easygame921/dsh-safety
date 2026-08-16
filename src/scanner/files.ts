@@ -53,6 +53,8 @@ export async function discoverFiles(root: string, opts: DiscoverOptions = {}): P
       if (!entry.isFile()) continue;
       const ext = extname(entry.name).toLowerCase();
       if (!INCLUDE_EXT.has(ext)) continue;
+      // 类型声明文件无运行行为，排除（避免 .d.ts 误报）
+      if (entry.name.endsWith('.d.ts') || entry.name.endsWith('.d.mts') || entry.name.endsWith('.d.cts')) continue;
       if ((opts.excludeExts ?? []).includes(ext)) continue;
       let stat;
       try {

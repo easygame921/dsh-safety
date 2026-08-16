@@ -5,6 +5,7 @@ import type { Evidence, Finding, SafetyRule } from '../types.js';
 import type { ScannedFile } from './files.js';
 import { matchPattern, matchPath } from './matchers.js';
 import { patchDisablesSecurity, pkgInstallScripts } from './manifest.js';
+import { runAstChecks } from './ast.js';
 
 function globToRe(glob: string): RegExp {
   // 逐字符转换：** -> .* ；* -> [^/]* ；{a,b} -> (a|b) ；其余正则特殊字符转义
@@ -107,6 +108,9 @@ function runRuleOnFile(file: ScannedFile, rule: SafetyRule): Evidence[] {
   for (const check of rule.fileChecks ?? []) {
     if (check === 'pkg-install-scripts') ev.push(...pkgInstallScripts(file.content, file.relPath));
     if (check === 'patch-disables-security') ev.push(...patchDisablesSecurity(file.content, file.relPath));
+  }
+  if (rule.astChecks && rule.astChecks.length > 0) {
+    ev.push(...runAstChecks(file.content, file.relPath, rule.astChecks));
   }
   ev.push(...runCombinators(file, rule));
   return ev;

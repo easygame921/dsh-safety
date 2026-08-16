@@ -48,6 +48,7 @@ export const v1Rules: SafetyRule[] = [
     description: 'eval/new Function 接收 base64 或超长拼接串，可能是混淆后的恶意代码（本样本即 base64 载荷 + eval 模式）。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
     patterns: ['eval\\s*\\([^)]{0,20}(Buffer|atob|fromCharCode)', 'new Function\\s*\\([^)]{0,40}["\'`]', 'eval\\s*\\(\\s*[`"\'][A-Za-z0-9+/=]{60,}'],
+    astChecks: ['eval-source'],
     combinators: [
       {
         name: 'eval-var-encoded',
@@ -119,7 +120,7 @@ export const v1Rules: SafetyRule[] = [
         name: 'network+sensitive-read',
         allOf: [
           'fetch\\s*\\(|https?\\.[a-z]+\\s*\\(|WebSocket|axios|request\\s*\\(',
-          'readFile[^\\n]{0,120}(credential|id_rsa|\\.ssh|\\.npmrc|\\.env|secret|token|key|session)|execFile|execSync|spawn\\s*\\(',
+          'readFile[^\\n]{0,120}(credential|id_rsa|\\.ssh|\\.npmrc|(?<![\\w.])[.]env\\b|secret|token|key|session)|execFile|execSync|spawn\\s*\\(',
         ],
       },
     ],
@@ -144,21 +145,22 @@ export const v1Rules: SafetyRule[] = [
     title: '引用凭据/敏感路径',
     description: '源码引用 DSH 凭据文件（.credentials.yaml）、SSH 私钥、.npmrc、.codex、.env 等敏感路径——提示性发现；只有与读取 API 组合（T06-002）才构成窃取证据。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
-    pathPatterns: ['\\.credentials\\.ya?ml', '\\.ssh|id_rsa|id_ed25519', '\\.npmrc', '\\.codex', '\\.env', '\\.aws[/\\\\]credentials', '\\.kube', '\\.netrc'],
-    patterns: ['\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|\\.aws[/\\\\]credentials|\\.netrc'],
-    falsePositiveNotes: '仅限源码文件（文档/配置文件不再计入）；引用≠读取，实害由 T06-002 判定。',
+    pathPatterns: ['\\.credentials\\.ya?ml', '\\.ssh|id_rsa|id_ed25519', '\\.npmrc', '\\.codex', '(?<![\\w.])[.]env\\b', '\\.aws[/\\\\]credentials', '\\.kube', '\\.netrc'],
+    patterns: ['\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|\\.aws[/\\\\]credentials|(?<![\\w.])[.]env\\b|\\.netrc'],
+    falsePositiveNotes: '仅限源码文件（文档/配置文件不再计入）；引用≠读取，实害由 T06-002 判定；.env 需独立路径形态（排除 process.env 正常用法）。',
   },
   {
     id: 'T06-002',
     threatId: 'T06',
     severity: 'review',
     title: '读取敏感路径内容',
-    description: '用 fs/child_process 读取凭据或个人信息文件的完整内容——窃取凭据的直接证据。',
+    description: '用 fs/child_process 读取凭据或个人信息文件的完整内容——窃取凭据的直接证据（含变量拼接敏感路径的对抗形态）。',
     fileGlobs: ['**/*.{js,ts,mjs,cjs}'],
+    astChecks: ['folded-sensitive-path'],
     combinators: [
       {
         name: 'read-credential-path',
-        allOf: ['readFile|readFileSync|execFile|execSync|spawn|exec\\s*\\(', '\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|\\.env|credential'],
+        allOf: ['readFile|readFileSync|execFile|execSync|spawn|exec\\s*\\(', '\\.credentials\\.ya?ml|id_rsa|id_ed25519|\\.ssh|\\.npmrc|\\.codex|auth\\.json|(?<![\\w.])[.]env\\b|credential'],
       },
     ],
     falsePositiveNotes: '需"读取 API + 敏感路径"同文件共存；扫描器自身代码排除在外。',

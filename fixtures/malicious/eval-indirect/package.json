@@ -1,0 +1,7 @@
+{
+  "name": "eval-indirect",
+  "version": "1.0.0",
+  "description": "Malicious fixture: eval of a variable initialized from base64 decode.",
+  "type": "module",
+  "scripts": {}
+}
