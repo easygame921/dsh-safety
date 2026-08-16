@@ -1,0 +1,110 @@
+{
+  "note": "dsh 社区第三方插件批量审计样本集（排除官方 @deepseek-ai/* 运行时包）。来源：npm registry 搜索 + GitHub 已知项目。",
+  "categories": [
+    {
+      "name": "安全审计类",
+      "samples": [
+        { "name": "dsh-plugin-audit", "source": "npm:dsh-plugin-audit" },
+        { "name": "dsh-plugin-vetting", "source": "npm:dsh-plugin-vetting" },
+        { "name": "dsh-security-guard", "source": "npm:dsh-security-guard" },
+        { "name": "dsh-plugin-doctor", "source": "npm:dsh-plugin-doctor" },
+        { "name": "dsh-code-security", "source": "github:ihuajiu/dsh-code-security" },
+        { "name": "dsh-skill-pack-security", "source": "github:PerryLink/dsh-skill-pack-security" },
+        { "name": "upstream-radar", "source": "github:MicroMilo/upstream-radar" },
+        { "name": "dsh-guardian", "source": "github:lonelymoon87/dsh-guardian" },
+        { "name": "dsh-vault", "source": "npm:dsh-vault" },
+        { "name": "dsh-testkit", "source": "npm:dsh-testkit" }
+      ]
+    },
+    {
+      "name": "视觉识图类",
+      "samples": [
+        { "name": "aalongaa-dsh-tool-vision", "source": "npm:@aalongaa/dsh-tool-vision" },
+        { "name": "linxin666-dsh-tool-describe-image", "source": "npm:@linxin666/dsh-tool-describe-image" },
+        { "name": "dttxorg-deepseekeyes", "source": "npm:@dttxorg/deepseekeyes" },
+        { "name": "dsh-vision", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision" },
+        { "name": "crazy-th-dsh-computer-use", "source": "npm:crazy_th/dsh-computer-use" }
+      ]
+    },
+    {
+      "name": "UI界面增强类",
+      "samples": [
+        { "name": "dsh-better-sidebar", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar" },
+        { "name": "dsh-plugin-workbench", "source": "npm:dsh-plugin-workbench" },
+        { "name": "dsh-plugin-file-explorer", "source": "npm:dsh-plugin-file-explorer" },
+        { "name": "dsh-web-open", "source": "npm:dsh-web-open" },
+        { "name": "dsh-ergonomics", "source": "npm:dsh-ergonomics" },
+        { "name": "dsh-chrome", "source": "npm:dsh-chrome" },
+        { "name": "dsh-mcp-mgr-ui", "source": "npm:dsh-mcp-mgr-ui" },
+        { "name": "michengai-dsh-skills-manager", "source": "npm:@michengai/dsh-skills-manager" },
+        { "name": "dsh-extension-hub", "source": "npm:dsh-extension-hub" },
+        { "name": "dsh-web-plugin-manager", "source": "npm:dsh-web-plugin-manager" }
+      ]
+    },
+    {
+      "name": "工具效率类",
+      "samples": [
+        { "name": "dsh-better-edit", "source": "npm:dsh-better-edit" },
+        { "name": "dsh-git-rollback", "source": "npm:dsh-git-rollback" },
+        { "name": "dsh-cost-log", "source": "npm:dsh-cost-log" },
+        { "name": "rongyi7-dsh-stats", "source": "npm:@rongyi7/dsh-stats" },
+        { "name": "linxin666-dsh-live-stats", "source": "npm:@linxin666/dsh-live-stats" },
+        { "name": "deepseek-harness-quota-monitor", "source": "npm:deepseek-harness-quota-monitor" },
+        { "name": "dsh-speak", "source": "npm:dsh-speak" },
+        { "name": "dsh-win32", "source": "npm:dsh-win32" },
+        { "name": "dsh-remote", "source": "npm:dsh-remote" },
+        { "name": "noeljude-dsh-remote-plugin", "source": "npm:@noeljude/dsh-remote-plugin" }
+      ]
+    },
+    {
+      "name": "MCP与集成类",
+      "samples": [
+        { "name": "opendsh-dsh-plugin-setting-mcp", "source": "npm:@opendsh/dsh-plugin-setting-mcp" },
+        { "name": "dsh-find-plugin", "source": "npm:dsh-find-plugin" },
+        { "name": "dsh-plug-manager", "source": "npm:dsh-plug-manager" },
+        { "name": "laizhixingxingdeli-dsh-coagenthub", "source": "npm:@laizhixingxingdeli/dsh-coagenthub" },
+        { "name": "michengai-dsh-agency-agents", "source": "npm:@michengai/dsh-agency-agents" },
+        { "name": "dsh-codex-oauth", "source": "npm:dsh-codex-oauth" },
+        { "name": "linxin666-dsh-ssh", "source": "npm:@linxin666/dsh-ssh" },
+        { "name": "dsh-wechat-mp", "source": "npm:dsh-wechat-mp" }
+      ]
+    },
+    {
+      "name": "终端工作流类",
+      "samples": [
+        { "name": "jkxie-dsh-deep-flow", "source": "npm:@jkxie/dsh-deep-flow" },
+        { "name": "deepseek-flow", "source": "npm:deepseek-flow" },
+        { "name": "dsh-mini-tui", "source": "npm:dsh-mini-tui" },
+        { "name": "dsh-tui", "source": "npm:deepseek-harness-tui/dsh-tui" },
+        { "name": "cute-dsh-tui", "source": "npm:@heluo0991/cute-dsh-tui" },
+        { "name": "yunper-macode", "source": "npm:@yunper/macode" },
+        { "name": "pi-dsh-optimizer", "source": "npm:pi-dsh-optimizer" },
+        { "name": "dsh-desktop-windows", "source": "npm:dsh-desktop-windows" }
+      ]
+    },
+    {
+      "name": "宠物娱乐类",
+      "samples": [
+        { "name": "harness-pet", "source": "local:C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet" },
+        { "name": "linxin666-dsh-pet", "source": "npm:@linxin666/dsh-pet" },
+        { "name": "dsh-client-ui-pet", "source": "npm:dsh-client-ui-pet" }
+      ]
+    },
+    {
+      "name": "数据存储类",
+      "samples": [
+        { "name": "memos-local-plugin", "source": "npm:@memtensor/memos-local-plugin" },
+        { "name": "dsh-pocket", "source": "npm:dsh-pocket" },
+        { "name": "dsh-frontend-tools-bridge", "source": "npm:dsh-frontend-tools-bridge" }
+      ]
+    },
+    {
+      "name": "桌面平台类",
+      "samples": [
+        { "name": "dsh-desktop-plugin", "source": "npm:dsh-desktop-plugin" },
+        { "name": "dsh-market", "source": "npm:dshmarket" },
+        { "name": "dsh-plugin-marketplace", "source": "npm:dsh-plugin-marketplace" }
+      ]
+    }
+  ]
+}
