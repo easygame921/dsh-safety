@@ -81,7 +81,6 @@ for (const d of benignDirs) {
 
 // 本地真实插件对照（已人工复核为良性；存在则扫，不存在跳过——CI 等无本机路径的环境）
 const { homedir } = await import('node:os');
-const { join } = await import('node:path');
 const dshNodeModules = join(homedir(), '.dsh', 'profiles', 'web', 'node_modules');
 const localPlugins = [
   { dir: join(dshNodeModules, 'dsh-better-sidebar'), label: 'dsh-better-sidebar' },
