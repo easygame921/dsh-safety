@@ -13,7 +13,7 @@
     "DESIGN.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-sandbox.mjs",
     "test": "npm run build && node --test",
     "scan": "npm run build && node dist/cli.js"
   },

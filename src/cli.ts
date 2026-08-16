@@ -5,6 +5,7 @@ import { scan, renderMarkdown, renderPlainSummary } from './scanner/index.js';
 import { v1Rules } from './rules/index.js';
 import { prepareSource } from './resolve/source.js';
 import { createServer } from './mcp/server.js';
+import { runDynamic, renderDynamicSummary } from './dynamic/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const VERSION = '0.1.0';
@@ -69,6 +70,28 @@ async function main(): Promise<void> {
       process.exitCode = await cmdAudit(source);
     } catch (err) {
       process.stderr.write(`审计失败: ${err instanceof Error ? err.message : String(err)}\n`);
+      process.exitCode = 1;
+    }
+    return;
+  }
+  if (argv[0] === 'dynamic') {
+    const source = argv[1];
+    if (!source) {
+      process.stderr.write('缺少插件来源参数\n');
+      process.exitCode = 2;
+      return;
+    }
+    try {
+      const { root, workDir, cleanup } = await prepareSource(source);
+      try {
+        const report = await runDynamic(root);
+        process.stdout.write(renderDynamicSummary(report) + '\n');
+        process.stdout.write('\n--- 原始轨迹 ---\n' + JSON.stringify(report.traces, null, 2) + '\n');
+      } finally {
+        await cleanup();
+      }
+    } catch (err) {
+      process.stderr.write(`动态运行失败: ${err instanceof Error ? err.message : String(err)}\n`);
       process.exitCode = 1;
     }
     return;
