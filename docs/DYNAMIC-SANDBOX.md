@@ -139,3 +139,19 @@ const ctx = {
 - [ ] 没有真实文件读写（读空写丢）
 - [ ] 没有真实 eval
 - [ ] 超时必杀
+
+## 9. 依赖加载（已实现，src/dynamic/deps.ts）
+
+npm tarball 无 node_modules → 插件 import 外部依赖失败是主要瓶颈。
+方案：动态运行前 `npm install --ignore-scripts`（**不执行任何安装钩子**，与沙箱
+"命令不执行"约束一致）。实测：真实插件加载率 1/6 → 3/6（dsh-better-edit、
+dsh-speak、dsh-mini-tui 均可 completed）。
+
+## 10. 容器化（代码就绪，待环境）
+
+- `Dockerfile`（node:24-slim + 非 root + permission model）与 `src/dynamic/docker.ts`
+  （docker run --network none + 只读挂载 + 512MB/1CPU 资源限制）已就绪。
+- **当前环境阻塞**：Docker daemon 不可用（`docker-desktop` WSL 发行版 Stopped 且
+  启动失败：ext4.vhdx 挂载错误）。`runDynamicDocker` 探测到 daemon 不可用会明确
+  返回 `spawn-failed` + 提示，不静默降级（由调用方决定回退本地沙箱）。
+- 启用方式：启动 Docker Desktop → `npm run build` → 调用方改用 docker 后端。

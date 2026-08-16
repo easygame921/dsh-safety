@@ -8,6 +8,7 @@ import { mkdtemp, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { installDeps } from './deps.js';
 
 export interface DynamicTrace {
   type: 'network' | 'command' | 'fs-read' | 'fs-write' | 'eval' | 'env' | 'event' | 'load';
@@ -33,6 +34,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SANDBOX_MJS = join(here, '..', 'dynamic', 'sandbox.mjs');
 const DEFAULT_TIMEOUT_MS = 20000;
 
+export { riskSurfacesOf };
+
 /** 敏感路径正则（风险面判定） */
 const SENSITIVE_RE = /\.credentials\.ya?ml|id_rsa|id_ed25519|\.ssh|\.npmrc|\.codex|\.aws[/\\]credentials|\.netrc|(?<![\\w.])[.]env\b/i;
 
@@ -54,7 +57,7 @@ function riskSurfacesOf(traces: DynamicTrace[]): string[] {
 
 export async function runDynamic(
   pluginRoot: string,
-  opts: { timeoutMs?: number } = {},
+  opts: { timeoutMs?: number; installDeps?: boolean } = {},
 ): Promise<DynamicReport> {
   const started = Date.now();
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -69,6 +72,11 @@ export async function runDynamic(
     errors: [],
     riskSurfaces: [],
   };
+  // 前置：装依赖（--ignore-scripts 安全），失败不阻断（无依赖插件也能跑）
+  if (opts.installDeps !== false) {
+    const inst = await installDeps(pluginRoot, { timeoutMs: timeoutMs + 60000 });
+    if (!inst.ok) base.errors.push(inst.message);
+  }
 
   try {
     const slash = (p: string) => p.replaceAll('\\', '/'); // Node 24 权限模型用正斜杠匹配

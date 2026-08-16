@@ -125,6 +125,34 @@ const mockCtx = {
   sessions: { get: () => ({ push() {}, content: [] }), getCurrent: () => null },
   config: { get: () => undefined },
   workspace: { get cwd() { return sandboxWorkDir; } },
+  // ── 常见服务表面（dsh 生态插件常用，安全空实现，不抛错）──
+  model: {
+    on() {},
+    listModels: async () => [],
+    resolveModelInfo: async () => ({ inputModalities: ['text'], id: 'sandbox-model' }),
+    chat: async () => ({ content: '' }),
+  },
+  agent: { on() {}, start() {}, steer() {}, followup() {}, fork() {}, getCurrent: () => null, initiator: { on() {} } },
+  approval: { ask: async () => ({ outcome: 'deny', reason: 'sandbox' }) },
+  permission: { on() {} },
+  permissionPresets: { on() {} },
+  storage: {
+    get: () => undefined,
+    domain: () => ({ get: async () => undefined, set: async () => {}, on: () => {} }),
+  },
+  terminal: { on() {}, start: async () => ({}), send: async () => {} },
+  shell: { on() {}, execute: async () => ({ stdout: '', code: 0 }) },
+  workflows: { on() {}, run: async () => ({}) },
+  compaction: { on() {} },
+  subagent: { on() {}, start: async () => ({}) },
+  attachment: { on() {}, saveImage: async () => ({ attachmentId: 'sandbox' }) },
+  credentials: { get: async () => undefined, list: async () => [] },
+  telemetry: { on() {} },
+  scope: { on() {} },
+  invariants: { on() {} },
+  sdk: { on() {} },
+  plugins: { on() {} },
+  heartbeat: { on() {} },
 };
 
 // ── 5. 加载插件入口 ──────────────────────────────────────────────────────
