@@ -1,6 +1,6 @@
 {
   "name": "dsh-safety",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "对社区开源的 DeepSeek Harness（DSH）插件做安装前安全审计的 MCP 服务器",
   "type": "module",
   "main": "dist/index.js",
