@@ -29,6 +29,14 @@ export const defaultAllowlist: AllowlistConfig = {
       action: 'downgrade',
       reason: '仅文档/注释提及敏感路径，无读取行为（人工复核结论）',
     },
+    {
+      // 安全/审计/凭据管理类插件：命中敏感模式（凭据路径、网络+读取、patch 文本）是其本职工作，
+      // 并非恶意——降级保留证据（批量审计人工复核结论，2026-08-16）
+      ruleId: '*',
+      plugin: '^(dsh-plugin-audit|dsh-plugin-vetting|dsh-code-security|upstream-radar|dsh-guardian|dsh-plugin-doctor|dsh-security-guard|dsh-skill-pack-security|dsh-testkit|dsh-vault)$',
+      action: 'downgrade',
+      reason: '安全/审计/凭据管理类插件：命中敏感模式是本职工作（人工复核结论）',
+    },
   ],
 };
 
