@@ -10,6 +10,7 @@ import { v1Rules } from '../rules/index.js';
 import { prepareSource } from '../resolve/source.js';
 import { runDynamic, renderDynamicSummary } from '../dynamic/index.js';
 import type { DynamicReport } from '../dynamic/index.js';
+import { crossValidate, renderCrossValidation } from '../cross/index.js';
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -44,12 +45,14 @@ export function createServer(): McpServer {
     }
   }
 
-  /** 输出 = 完整报告 + 大白话总结（+ 动态轨迹，机制约定见 docs/AUTOTRIGGER.md） */
+  /** 输出 = 完整报告 + 交叉验证（有动态时）+ 动态轨迹 + 大白话总结 */
   function auditContent(result: AuditResult): { type: 'text'; text: string }[] {
     const blocks = [
       { type: 'text' as const, text: renderMarkdown(result.report) },
     ];
     if (result.dynamic) {
+      const cv = crossValidate(result.report, result.dynamic);
+      blocks.push({ type: 'text' as const, text: renderCrossValidation(cv) });
       blocks.push({ type: 'text' as const, text: renderDynamicSummary(result.dynamic) });
     }
     blocks.push({ type: 'text' as const, text: renderPlainSummary(result.report) });
