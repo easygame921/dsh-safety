@@ -56,3 +56,28 @@
 - 攻击者会用零宽字符、base64、压缩混淆规避静态扫描（T02）。
 - 网络域名提取要排除 localhost/127.0.0.1/*.local 与配置白名单。
 - 组合规则（combinators）优先于单特征规则（防误报）。
+
+## 组合规则邻近语义（2026-08 起）
+
+`combinators.allOf` 的子特征必须在**同一文件 ±2000 字符窗口**内共存才算命中——
+"同一函数/语句块的关联行为"。全文件散落共存（如查市场 fetch + 读配置 readFile）
+不算组合。字符窗口对压缩产物（单行大文件）同样有效。动机：64% → 34.8% 误报率压制
+的核心机制之一（跨模块无关能力不再误判为攻击组合）。
+
+## 注释排除
+
+代码规则（patterns / combinators）默认跳过注释/纯文本行（`//`、`/*`、`*`、`#`、`--` 开头）。
+注释里描述危险模式 ≠ 真实行为（真实插件 README/注释大量描述安全警告导致误报）。
+
+## T14 依赖链投毒（新增，2026-08）
+
+| 规则 | severity | 检查 | 说明 |
+|---|---|---|---|
+| T14-001 | review | `pkg-deps-audit` | 已知恶意包名单（event-stream、ua-parser-js 投毒版、node-ipc、crypto-js 等真实事件）；typosquatting（与高价值知名包**长度相同且编辑距离=1**，如 lodahs/lodash、axois/axios）；可疑来源协议（file:/git+/http://） |
+| T14-002 | review | `.npmrc` patterns | registry 指向非 https 或非官方源（registry 篡改） |
+| T14-003 | notice | `pkg-dep-wide-range` | 通配版本（* / latest）依赖——DSH 官方 @deepseek-ai/* 包用通配是生态标准，仅提示 |
+
+typosquat 判定要点：**长度相同 + 编辑距离 1**（单字符差异）。短词 2 字符差异
+（clsx/tsx、vitest/vite、@codemirror/commands vs commander）为合法包，不得误报
+（本地真实插件实测驱动）。dotfile（.npmrc/.lock）由 files.ts 按完整文件名匹配
+（`extname('.npmrc')` 返回空串，需特殊处理）。

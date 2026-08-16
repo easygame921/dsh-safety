@@ -139,6 +139,27 @@ test('adversarial eval-indirect: eval(variable from Buffer.from decode) caught v
   );
 });
 
+// ---------------------------------------------------------------- T14 依赖链
+test('T14 supply-chain-poison: known-malicious / typosquat / wide-range detected', async () => {
+  const r = await auditFixture('malicious-real/supply-chain-poison');
+  assert.ok(threatIds(r).has('T14'), `expected T14 finding, got: ${[...threatIds(r)]}`);
+  const t14 = r.findings.filter((f) => f.threatId === 'T14');
+  assert.ok(t14.some((f) => f.severity === 'review'), 'T14 must be review');
+  const pats = t14.flatMap((f) => f.evidence.map((e) => e.pattern));
+  assert.ok(pats.includes('dep-known-malicious'), 'known-malicious evidence expected');
+  assert.ok(pats.includes('dep-typosquat'), 'typosquat evidence expected (lodahs/axois)');
+});
+
+test('T14 registry-tampering: npmrc registry override + wide range detected', async () => {
+  const r = await auditFixture('malicious-real/registry-tampering');
+  assert.ok(threatIds(r).has('T14'), `expected T14 finding, got: ${[...threatIds(r)]}`);
+  const t14 = r.findings.filter((f) => f.threatId === 'T14');
+  assert.ok(t14.some((f) => f.severity === 'review'), 'T14 must be review');
+  // .npmrc 应被扫描（dotfile 扩展名处理）
+  const npmrcEv = t14.flatMap((f) => f.evidence).filter((e) => e.file.endsWith('.npmrc'));
+  assert.ok(npmrcEv.length > 0, '.npmrc registry evidence expected');
+});
+
 // ---------------------------------------------------------------- allowlist
 test('allowlist: downgrade suppresses review severity but keeps evidence', async () => {
   const root = join(fixtures, 'malicious/install-script');
