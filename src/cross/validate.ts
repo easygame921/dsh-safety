@@ -18,7 +18,7 @@ export interface ThreatVerdict {
   /** 静态命中数（该威胁的 review 发现数） */
   staticFindings: number;
   /** 交叉结论 */
-  verdict: 'confirmed' | 'unconfirmed' | 'contradicted' | 'no-dynamic';
+  verdict: 'confirmed' | 'unconfirmed' | 'contradicted' | 'no-dynamic' | 'load-failed';
   /** 支撑证据说明 */
   reason: string;
   /** 命中的动态轨迹（抽样） */
@@ -206,13 +206,16 @@ function dynamicAdditions(traces: DynamicTrace[]): string[] {
  */
 export function crossValidate(report: AuditReport, dynamic?: DynamicReport): CrossValidationResult {
   const traces = dynamic?.traces ?? [];
-  const hasDynamic = !!dynamic && dynamic.status !== 'load-failed' && dynamic.status !== 'spawn-failed';
+  // 区分：真没跑动态（no-dynamic）vs 动态跑了但加载失败（load-failed——无法验证，不等于安全）
+  const ranDynamic = !!dynamic && dynamic.status !== 'spawn-failed';
+  const loaded = !!dynamic && dynamic.status === 'completed';
+  const hasDynamic = loaded;
   const staticThreats = staticReviewThreats(report);
   const verdicts: ThreatVerdict[] = [];
 
   for (const [threatId, findings] of staticThreats) {
     const req = REQUIREMENTS.find((r) => r.threatId === threatId);
-    if (!hasDynamic || !req) {
+    if (!ranDynamic || !req) {
       verdicts.push({
         threatId,
         severity: 'review',
@@ -223,9 +226,19 @@ export function crossValidate(report: AuditReport, dynamic?: DynamicReport): Cro
       });
       continue;
     }
+    if (!loaded) {
+      verdicts.push({
+        threatId,
+        severity: 'review',
+        staticFindings: findings.length,
+        verdict: 'load-failed',
+        reason: `动态沙箱加载失败（${dynamic?.status}）——无法交叉验证，不因"无动态证据"降低风险`,
+        matchingTraces: [],
+      });
+      continue;
+    }
     const met = evidenceMet(req, traces);
     const matching = traces.filter((t) => {
-      // 匹配该威胁相关的轨迹（敏感读取/网络/命令/eval/timer）
       return t.type === 'eval' || t.type === 'network' || t.type === 'command' || t.type === 'fs-read' || t.type === 'timer' || t.type === 'fs-write';
     });
     verdicts.push({
@@ -241,15 +254,18 @@ export function crossValidate(report: AuditReport, dynamic?: DynamicReport): Cro
   }
 
   const dynamicConfirmsRisk = verdicts.some((v) => v.verdict === 'confirmed');
-  const additions = hasDynamic ? dynamicAdditions(traces) : [];
+  const additions = ranDynamic ? dynamicAdditions(traces) : [];
   const dynamicAddsFindings = additions.length > 0;
   const confirmedThreats = verdicts.filter((v) => v.verdict === 'confirmed').map((v) => v.threatId);
 
   const confirmed = confirmedThreats.length;
   const unconfirmed = verdicts.filter((v) => v.verdict === 'unconfirmed').length;
+  const loadFailed = verdicts.filter((v) => v.verdict === 'load-failed').length;
   let plain: string;
-  if (!hasDynamic) {
+  if (!ranDynamic) {
     plain = `静态发现 ${verdicts.length} 项 review 风险，未运行动态沙箱——如需动态佐证请用 dynamic 选项。`;
+  } else if (loadFailed > 0 && confirmed === 0) {
+    plain = `静态风险（${verdicts.map((v) => v.threatId).join('、')}）的动态沙箱加载失败（${loadFailed} 项无法验证）——不能因"无动态证据"降低风险，建议人工复核。`;
   } else if (confirmed > 0 && additions.length > 0) {
     plain = `动态沙箱证实了 ${confirmed} 项静态风险（${confirmedThreats.join('、')}），并额外发现 ${additions.length} 项静态未标的行为——建议优先复核。`;
   } else if (confirmed > 0) {
@@ -284,7 +300,7 @@ export function renderCrossValidation(cv: CrossValidationResult): string {
   lines.push('| 威胁 | 静态 | 动态结论 | 说明 |');
   lines.push('| --- | --- | --- | --- |');
   for (const v of cv.verdicts) {
-    const badge = v.verdict === 'confirmed' ? '✅ 证实' : v.verdict === 'unconfirmed' ? '⚠️ 未证实' : '—';
+    const badge = v.verdict === 'confirmed' ? '✅ 证实' : v.verdict === 'unconfirmed' ? '⚠️ 未证实' : v.verdict === 'load-failed' ? '🚫 加载失败' : '—';
     lines.push(`| ${v.threatId} | ${v.staticFindings} 条 review | ${badge} | ${v.reason} |`);
   }
   if (cv.dynamicAddsFindings && cv.additions.length > 0) {

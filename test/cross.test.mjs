@@ -45,8 +45,21 @@ test('cross: no-dynamic — verdicts report no-dynamic without crashing', async 
   assert.ok(cv.verdicts.every((v) => v.verdict === 'no-dynamic'));
 });
 
-test('cross: install-script-only threat (T03) stays unconfirmed, not contradicted', async () => {
-  // T03 安装脚本：动态沙箱不执行安装钩子 → 观察不到是预期；不得因"动态干净"降级为安全
+test('cross: load-failed dynamic is NOT treated as safe (load-failed verdict)', async () => {
+  // 动态跑了但加载失败（如依赖不齐/apply 依赖真实环境）——必须标 load-failed，
+  // 绝不能因"没动态证据"降级为安全
+  const root = join(fixtures, 'malicious', 'install-script'); // 无 host 入口 → load-failed
+  const report = await scan({ root, sourceLabel: 'install-script', excludeTests: false }, v1Rules);
+  const dynamic = await runDynamic(root, { timeoutMs: 15000, installDeps: false });
+  const cv = crossValidate(report, dynamic);
+  assert.equal(cv.hasDynamic, false, 'load-failed must not count as dynamic evidence');
+  assert.ok(cv.verdicts.some((v) => v.verdict === 'load-failed'), 'load-failed verdict expected');
+  assert.ok(!cv.plain.includes('未观察到对应行为'), 'must not claim clean when load failed');
+});
+
+test('cross: install-script-only threat (T03) stays unconfirmed/load-failed, not contradicted', async () => {
+  // T03 安装脚本：动态沙箱不执行安装钩子 → 观察不到是预期；不得因"动态干净"降级为安全。
+  // 该夹具无 host 端入口（只有 package.json + scripts），动态可能 load-failed——同样不得降级。
   const root = join(fixtures, 'malicious', 'install-script');
   const report = await scan({ root, sourceLabel: 'install-script', excludeTests: false }, v1Rules);
   const dynamic = await runDynamic(root, { timeoutMs: 15000, installDeps: false });
@@ -54,6 +67,6 @@ test('cross: install-script-only threat (T03) stays unconfirmed, not contradicte
   const t03 = cv.verdicts.find((v) => v.threatId === 'T03');
   // T03 可能是 review（install script 是 review 规则）
   if (t03) {
-    assert.ok(['unconfirmed', 'no-dynamic'].includes(t03.verdict), `T03 must not be claimed safe, got ${t03.verdict}`);
+    assert.ok(['unconfirmed', 'load-failed', 'no-dynamic'].includes(t03.verdict), `T03 must not be claimed safe, got ${t03.verdict}`);
   }
 });
