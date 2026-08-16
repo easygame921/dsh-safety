@@ -172,3 +172,73 @@ dsh-speak、dsh-mini-tui 均可 completed）。
 `Dockerfile` + `src/dynamic/docker.ts` **保留为可选增强**（内核级资源上限更严格），
 但**非必需**。Docker daemon 当前不可用不影响沙箱使用；`runDynamicDocker` 探测到
 daemon 不可用会明确提示，不静默降级。
+
+## 11. 二轮打磨：fs/cp 真插桩 + 时间加速 + 工具模拟（2026-08-16）
+
+MVP 的"错误即证据"（权限模型拒绝错误提取路径）粒度粗：fs 拒绝不带路径、延迟触发
+行为在观察窗口内必然漏。二轮升级（实测驱动）：
+
+### 11.1 fs / child_process 真插桩（精确路径/命令记录）
+
+关键发现：**patch `require('node:fs')` 模块对象后，插件 ESM `import { readFileSync }`
+同样看到新函数**（ESM 命名导入共享 CJS 模块对象）。于是从"错误即证据"升级为真插桩：
+
+| API | 行为 | 轨迹 |
+|---|---|---|
+| readFile/readFileSync/createReadStream | **路径敏感**：插件根内（ESM loader 读源码/入口探测）走真实；根外记录+返回空 Buffer | `{type:'fs-read', path}` |
+| writeFile/appendFile/mkdir/rm/unlink/copyFile | 记录+丢弃（不触碰真实文件系统） | `{type:'fs-write', path, op}` |
+| readdir/stat/existsSync | 记录路径（信息性） | `{type:'fs-read', path, op}` |
+| exec/execSync/execFile/spawn/spawnSync | 记录命令，返回模拟空输出（不执行） | `{type:'command', cmd}` |
+
+**路径敏感的关键**：不能全量 patch readFile——ESM loader 也用 fs 读插件源码，
+全量 patch 会把插件模块读成空导致 load-failed。白名单判定用 `isInsidePluginRoot`。
+
+### 11.2 时间加速（timer 插桩）
+
+setTimeout/setInterval/setImmediate **立即执行回调**（记录原始延迟），沙箱内不真实等待。
+动机：延迟触发型恶意行为（setTimeout 5s 后读凭据）在观察窗口内必然漏——加速后立即暴露，
+危险动作仍被 fs/net/cp 拦截，只是时机提前。
+新风险面：`deferred-trigger`（timer + 敏感行为组合 = 反静态检测手法）。
+实测：delayed-exfil（5s 延迟）从"完全漏报"→ `fs-read-sensitive,network,network-exfil-risk,deferred-trigger` 全抓到。
+
+### 11.3 工具调用模拟
+
+ctx.tool 支持三种形态（直接 handler / 链式 register / 无参 tool().register(name,fn)），
+apply 后**逐个调用已注册工具 handler**（mock 参数）——夹带行为常藏在工具体里。
+新轨迹：`{type:'tool', name}`。
+
+### 11.4 事件扩展 + unhandledRejection 容忍
+
+- 事件 3 → 5 个：session/start、agent/turn/start、message/create、agent/tool/call、session/end
+- 观察窗口 800ms → 2000ms（timer 加速后主要等微任务/IO 回调）
+- `process.on('unhandledRejection')`：插件代码忘 await 的 async 调用（如
+  `const code = fetch_rat()`）默认崩沙箱——捕获为错误轨迹，不影响观察其余行为
+
+### 11.5 二轮实测结果（15 样本全跑）
+
+| 样本 | 动态结果 |
+| --- | --- |
+| delayed-exfil | fs-read-sensitive + network + network-exfil-risk + **deferred-trigger** ✅ |
+| credential-dumper | fs-read-sensitive + network + network-exfil-risk ✅ |
+| api-key-sniffer | fs-read-sensitive + network + network-exfil-risk ✅ |
+| session-thief | fs-read-sensitive（会话目录）✅ |
+| persistence-rat | command + eval + network（unhandledRejection 容忍）✅ |
+| obfuscated-loader | eval ✅ |
+| exfil（旧夹具） | fs-read-sensitive + network + command ✅ |
+| ok-plugin / vision-helper | 干净 / network（能力面）✅ |
+
+测试 8 项动态断言全绿（全量 35/35）。
+
+**结论：动态沙箱不依赖 Docker**——本地方案（Node 权限模型 + 插桩）已覆盖核心隔离：
+
+| 隔离点 | 本地方案 | 状态 |
+| --- | --- | --- |
+| 网络 | `--permission` 不授权 net → fetch/http 被内核拒 + fetch patch | ✅ 实证（exfil 网络被拦） |
+| 文件系统 | `--allow-fs-read/write` 白名单 + HOME 重定向 | ✅ 实证（exfil 读真文件失败） |
+| 子进程 | 权限模型禁 child_process | ✅ |
+| 资源限制 | `--max-old-space-size=256` + 超时强杀 | ✅ 实证（内存炸弹 294ms OOM 崩溃，宿主无影响） |
+| eval/Function | patch 记录不执行 | ✅ |
+
+`Dockerfile` + `src/dynamic/docker.ts` **保留为可选增强**（内核级资源上限更严格），
+但**非必需**。Docker daemon 当前不可用不影响沙箱使用；`runDynamicDocker` 探测到
+daemon 不可用会明确提示，不静默降级。
