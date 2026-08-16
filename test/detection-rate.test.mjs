@@ -57,3 +57,42 @@ test('detection-rate: benign fixtures produce zero review findings', async () =>
     assert.equal(reviews.length, 0, `${d} must have no review findings: ${JSON.stringify(reviews.map((f) => f.threatId))}`);
   }
 });
+
+test('detection-rate: local real plugins stay low-noise (<=3 review findings each, known-benign)', async (t) => {
+  // 本地已装真实插件（人工复核良性）；存在则校验误报上限，不存在则跳过（CI 环境）
+  const { access } = await import('node:fs/promises');
+  const plugins = [
+    'C:/Users/gojo/.dsh/profiles/web/node_modules/dsh-better-sidebar',
+    'C:/Users/gojo/.dsh/profiles/web/node_modules/zat-dsh-engine',
+    'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-vision',
+    'C:/Users/gojo/.dsh/profiles/web/node_modules/@dsh-external/dsh-super-injector',
+    'C:/Users/gojo/.dsh/profiles/web/node_modules/harness-pet',
+  ];
+  const details = [];
+  for (const p of plugins) {
+    let exists = true;
+    try { await access(p); } catch { exists = false; }
+    if (!exists) continue;
+    const label = p.split('/').pop();
+    const r = await scan({ root: p, sourceLabel: label }, v1Rules);
+    const reviews = r.findings.filter((f) => f.severity === 'review');
+    // 上限：每个已知良性真实插件 review ≤3（剩余为能力面合理项，如 prepare 脚本/git 凭据助手）
+    if (reviews.length > 3) {
+      details.push(`${label}: ${reviews.length} review (${[...new Set(reviews.map((f) => f.threatId))].join(',')})`);
+    }
+  }
+  const anyLocal = await (async () => {
+    for (const p of plugins) {
+      let ok = true;
+      try { await access(p); } catch { ok = false; }
+      if (ok) return true;
+    }
+    return false;
+  })();
+  if (anyLocal) {
+    // 仅当本地有真实插件时断言
+    assert.equal(details.length, 0, `local real plugins exceed noise cap: ${details.join('; ')}`);
+  } else {
+    t.skip('本机无真实插件目录，跳过本地误报对照');
+  }
+});

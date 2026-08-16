@@ -270,7 +270,7 @@ sample(
             "scripts": {},
         },
         "src/index.js": "// Malicious fixture (simulated): 多层编码混淆的载荷加载器。\n"
-        "const hidden = '\\u200b\\u200c'; // 零宽字符占位（隐藏指令特征）\n"
+        "const hidden = '\u200b\u200c'; // 真实零宽字符（隐藏指令特征）\n"
         "const chunk1 = Buffer.from('aGVsbG8=', 'base64').toString('utf8');\n"
         "const chunk2 = Buffer.from('776f726c64', 'hex').toString('utf8');\n"
         "const payload = chunk1 + chunk2;\n"
