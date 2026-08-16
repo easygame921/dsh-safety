@@ -3,7 +3,7 @@
  */
 import type { Evidence, Finding, SafetyRule } from '../types.js';
 import type { ScannedFile } from './files.js';
-import { matchPattern, matchPath } from './matchers.js';
+import { matchPattern, matchPath, isCommentLine } from './matchers.js';
 import { patchDisablesSecurity, pkgInstallScripts } from './manifest.js';
 import { runAstChecks } from './ast.js';
 
@@ -58,39 +58,79 @@ function fileMatchesGlobs(relPath: string, globs?: string[]): boolean {
   return false;
 }
 
-/** 组合规则（combinators）在同一文件内检查 */
+/**
+ * 组合规则（combinators）在同一文件内检查。
+ * 邻近语义：allOf 的多个子特征必须出现在**相近的字符窗口**内（默认 ±2000 字符，
+ * 约 40 行源码）才算组合——"同一函数/语句块的关联行为"；全文件散落共存
+ * （如查市场 fetch + 读配置 readFile）不算组合。字符窗口同时覆盖压缩产物（单行大文件）。
+ * anyOf 保持"任一出现即命中"。
+ * 注释/纯文本行不参与组合匹配（注释里描述危险模式 ≠ 真实行为）。
+ */
+const COMBO_PROXIMITY_CHARS = 2000;
+
+/** 把注释/纯文本行替换为等长空格（保留偏移），返回净化文本 */
+function stripCommentLines(file: ScannedFile): string {
+  const lines = file.content.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (l === undefined) continue;
+    if (isCommentLine(l)) lines[i] = ' '.repeat(l.length);
+  }
+  return lines.join('\n');
+}
+
 function runCombinators(file: ScannedFile, rule: SafetyRule): Evidence[] {
   if (!rule.combinators || rule.combinators.length === 0) return [];
   const out: Evidence[] = [];
-  for (const combo of rule.combinators) {
-    let hit = false;
-    let detail = '';
-    if (combo.allOf && combo.allOf.length > 0) {
-      hit = combo.allOf.every((p) => {
-        try {
-          return new RegExp(p).test(file.content);
-        } catch {
-          return false;
-        }
-      });
-      detail = combo.allOf.join(' && ');
-    } else if (combo.anyOf && combo.anyOf.length > 0) {
-      hit = combo.anyOf.some((p) => {
-        try {
-          return new RegExp(p).test(file.content);
-        } catch {
-          return false;
-        }
-      });
-      detail = combo.anyOf.join(' || ');
+  const clean = stripCommentLines(file);
+  /** 子特征正则命中的字符偏移（可重叠搜索） */
+  const hitOffsets = (p: string): number[] => {
+    try {
+      const re = new RegExp(p, 'g');
+      const res: number[] = [];
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(clean)) !== null) {
+        res.push(m.index);
+        if (m.index === re.lastIndex) re.lastIndex++;
+      }
+      return res;
+    } catch {
+      return [];
     }
-    if (hit) {
+  };
+  for (const combo of rule.combinators) {
+    if (combo.allOf && combo.allOf.length > 0) {
+      const allHits = combo.allOf.map(hitOffsets);
+      if (allHits.some((h) => h.length === 0)) continue; // 有子特征未命中
+      // 邻近窗口：以第一个子特征的每个命中偏移为中心，其余子特征须在 ±Δ 内有命中
+      let matchedOffset = -1;
+      for (const off of allHits[0]!) {
+        const inWindow = allHits.slice(1).every((h) => h.some((o) => Math.abs(o - off) <= COMBO_PROXIMITY_CHARS));
+        if (inWindow) {
+          matchedOffset = off;
+          break;
+        }
+      }
+      if (matchedOffset < 0) continue;
+      const line = clean.slice(0, matchedOffset).split('\n').length;
       out.push({
         file: file.relPath,
-        line: 0,
+        line,
         pattern: `combinator:${combo.name}`,
-        snippet: `组合命中: ${detail}`,
+        snippet: `组合命中（±${COMBO_PROXIMITY_CHARS} 字符内）: ${combo.allOf.join(' && ')}`,
       });
+    } else if (combo.anyOf && combo.anyOf.length > 0) {
+      const anyHits = combo.anyOf.map(hitOffsets);
+      if (anyHits.some((h) => h.length > 0)) {
+        const firstOff = anyHits.find((h) => h.length > 0)![0]!;
+        const line = clean.slice(0, firstOff).split('\n').length;
+        out.push({
+          file: file.relPath,
+          line,
+          pattern: `combinator:${combo.name}`,
+          snippet: `组合命中（anyOf）: ${combo.anyOf.join(' || ')}`,
+        });
+      }
     }
   }
   return out;

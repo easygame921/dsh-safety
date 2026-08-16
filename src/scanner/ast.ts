@@ -281,6 +281,59 @@ function findExfilFlows(ast: ReturnType<typeof parse>, bindings: Map<string, str
 }
 
 /**
+ * 凭据读取精确检查：读取 API（readFileSync/readFile/execFileSync/execSync/spawn）的
+ * **第一个实参**经折叠（字面量/变量回查/join）后本身就是敏感路径 ——
+ * 替代"全文件窗口内敏感词共存"的宽泛组合，消除"读普通文件 + 窗口碰巧有敏感词"误报。
+ * 同时覆盖数组字面量元素折叠为敏感路径 + 同文件存在读取调用（targets.map(readFileSync) 形态）。
+ */
+const READ_CALLEES = ['readFileSync', 'readFile', 'execFileSync', 'execSync', 'spawnSync', 'spawn', 'execFile'];
+
+function findCredentialReads(ast: ReturnType<typeof parse>, bindings: Map<string, string>, content: string): string[] {
+  const varInits = new Map<string, Node>();
+  walk(ast, (n) => {
+    if (n.type !== 'VariableDeclaration') return;
+    for (const decl of (n.declarations as Array<Node>) ?? []) {
+      const id = decl.id as Node | undefined;
+      if (id?.type === 'Identifier' && typeof id.name === 'string' && decl.init) {
+        varInits.set(id.name, decl.init as Node);
+      }
+    }
+  });
+  const out: string[] = [];
+  const hasRead = /readFile|readFileSync|execFile|execSync|spawn|exec\s*\(/.test(content);
+  walk(ast, (n) => {
+    // 1) 直接读取调用，实参折叠为敏感路径
+    if (n.type === 'CallExpression') {
+      const callee = n.callee as Node | undefined;
+      const name =
+        callee?.type === 'Identifier'
+          ? String(callee.name ?? '')
+          : callee?.type === 'MemberExpression'
+            ? String((callee.property as Node | undefined)?.name ?? '')
+            : '';
+      if (READ_CALLEES.includes(name)) {
+        const arg0 = (n.arguments as Array<Node>)?.[0];
+        const folded = resolvePathExpr(arg0, bindings, varInits);
+        if (folded && SENSITIVE_PATH_RE.test(folded)) {
+          out.push(`${name}(${folded}) ← 敏感路径读取`);
+        }
+      }
+    }
+    // 2) 数组字面量元素折叠为敏感路径（配合同文件读取调用）
+    if (n.type === 'ArrayExpression' && hasRead) {
+      for (const el of (n.elements as Array<Node>) ?? []) {
+        if (!el) continue;
+        const folded = resolvePathExpr(el, bindings, varInits);
+        if (folded && SENSITIVE_PATH_RE.test(folded)) {
+          out.push(`数组元素 ${folded} ← 敏感路径（同文件存在读取调用）`);
+        }
+      }
+    }
+  });
+  return [...new Set(out)];
+}
+
+/**
  * 对文件执行 AST 级检查。
  * @returns 命中的证据（pattern 说明检查类型）
  */
@@ -323,6 +376,11 @@ export function runAstChecks(content: string, file: string, checks: AstCheckId[]
   if (checks.includes('exfil-flow')) {
     for (const s of findExfilFlows(ast, bindings)) {
       out.push({ file, line: 0, pattern: 'ast:exfil-flow', snippet: s });
+    }
+  }
+  if (checks.includes('credential-read')) {
+    for (const s of findCredentialReads(ast, bindings, content)) {
+      out.push({ file, line: 0, pattern: 'ast:credential-read', snippet: s });
     }
   }
   return out;
