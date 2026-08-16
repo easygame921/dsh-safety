@@ -35,8 +35,5 @@ Thumbs.db
 # 批量审计运行产物（本地生成，不入库）
 results/
 
-# library 项目不提交 lock（npm install 即可；避免依赖树漂移污染 diff）
-package-lock.json
-
 # npm 产物（夹具目录内）
 fixtures/**/package-lock.json
